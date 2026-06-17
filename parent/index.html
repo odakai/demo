@@ -381,8 +381,7 @@
 
 <script src="../app.js"></script>
 <script>
-const { DB, showToast } = RM;
-const Lang = RM.Lang;
+// RM global olarak app.js'den geliyor — destructure yok
 
 // ── i18n texts ──
 const PT = {
@@ -455,7 +454,7 @@ const PT = {
 };
 
 function applyLang() {
-  const t = PT[Lang.get()];
+  const t = PT[RM.Lang.get()];
   document.getElementById('lbl-page-title').textContent = t.pageTitle;
   document.getElementById('lbl-page-sub').textContent = t.pageSub;
   document.getElementById('lbl-settings').textContent = t.settings;
@@ -478,14 +477,14 @@ function applyLang() {
   document.getElementById('nav-child-link').textContent = t.childLink;
 }
 
-Lang.init();
+RM.Lang.init();
 document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', () => { applyLang(); loadReports(); }));
 applyLang();
 
 // ── Load settings ──
 async function loadSettings() {
   try {
-    const data = await DB.read();
+    const data = await RM.DB.read();
     const s = data.settings || {};
     document.getElementById('inp-duration').value = s.sessionDuration || 20;
     if (s.aiProvider) document.getElementById('sel-provider').value = s.aiProvider;
@@ -495,14 +494,14 @@ async function loadSettings() {
 
 // ── Save session duration ──
 document.getElementById('btn-save-settings').addEventListener('click', async () => {
-  const t = PT[Lang.get()];
+  const t = PT[RM.Lang.get()];
   const dur = parseInt(document.getElementById('inp-duration').value) || 20;
   try {
-    const data = await DB.read();
+    const data = await RM.DB.read();
     data.settings = { ...(data.settings || {}), sessionDuration: dur };
-    await DB.write(data);
-    showToast(t.settingsSaved, 'success');
-  } catch(e) { showToast('Hata: ' + e.message, 'error'); }
+    await RM.DB.write(data);
+    RM.showToast(t.settingsSaved, 'success');
+  } catch(e) { RM.showToast('Hata: ' + e.message, 'error'); }
 });
 
 // ── Reports ──
@@ -510,11 +509,11 @@ let currentReportIndex = null;
 let scoreChartInstance = null;
 
 async function loadReports() {
-  const t = PT[Lang.get()];
+  const t = PT[RM.Lang.get()];
   const container = document.getElementById('reports-container');
   container.innerHTML = `<div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-text">${t.loading}</div></div>`;
   try {
-    const data = await DB.read();
+    const data = await RM.DB.read();
     const sessions = (data.sessions || []).slice().reverse();
     if (!sessions.length) {
       container.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">${t.noReports}</div></div>`;
@@ -526,7 +525,7 @@ async function loadReports() {
     sessions.forEach((s, idx) => {
       const score = s.score ?? 0;
       const scoreClass = score >= 70 ? 'score-high' : score >= 40 ? 'score-mid' : 'score-low';
-      const date = new Date(s.date).toLocaleDateString(Lang.get() === 'tr' ? 'tr-TR' : 'en-GB');
+      const date = new Date(s.date).toLocaleDateString(RM.Lang.get() === 'tr' ? 'tr-TR' : 'en-GB');
       const dur = s.durationMinutes ?? '–';
 
       const item = document.createElement('div');
@@ -550,9 +549,11 @@ async function loadReports() {
   }
 }
 
+
+
 function openDetail(originalIndex, session) {
   currentReportIndex = originalIndex;
-  const t = PT[Lang.get()];
+  const t = PT[RM.Lang.get()];
 
   // Overview
   const score = session.score ?? 0;
@@ -653,15 +654,15 @@ document.getElementById('btn-close-modal').addEventListener('click', () => {
 // Delete report
 document.getElementById('btn-delete-report').addEventListener('click', async () => {
   if (currentReportIndex === null) return;
-  const t = PT[Lang.get()];
+  const t = PT[RM.Lang.get()];
   try {
-    const data = await DB.read();
+    const data = await RM.DB.read();
     data.sessions.splice(currentReportIndex, 1);
-    await DB.write(data);
+    await RM.DB.write(data);
     document.getElementById('detail-modal').classList.add('hidden');
-    showToast(t.reportDeleted, 'success');
+    RM.showToast(t.reportDeleted, 'success');
     loadReports();
-  } catch(e) { showToast(e.message, 'error'); }
+  } catch(e) { RM.showToast(e.message, 'error'); }
 });
 
 // Refresh
@@ -684,16 +685,16 @@ secretZone.addEventListener('click', () => {
 });
 
 document.getElementById('btn-save-secret').addEventListener('click', async () => {
-  const t = PT[Lang.get()];
+  const t = PT[RM.Lang.get()];
   const provider = document.getElementById('sel-provider').value;
   const key = document.getElementById('inp-api-key').value.trim();
   try {
-    const data = await DB.read();
+    const data = await RM.DB.read();
     data.settings = { ...(data.settings || {}), aiProvider: provider, apiKey: key };
-    await DB.write(data);
-    showToast(t.secretSaved, 'success');
+    await RM.DB.write(data);
+    RM.showToast(t.secretSaved, 'success');
     secretPanel.classList.remove('open');
-  } catch(e) { showToast(e.message, 'error'); }
+  } catch(e) { RM.showToast(e.message, 'error'); }
 });
 
 // Close secret panel on outside click
