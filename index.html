@@ -3,285 +3,101 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ReadMeter · Okuma</title>
-  <link rel="stylesheet" href="../style.css">
+  <title>ReadMeter</title>
+  <link rel="stylesheet" href="style.css">
   <style>
-    /* ── Phases ── */
-    .phase { display: none; }
-    .phase.active { display: flex; flex-direction: column; align-items: center; }
-
-    /* ── Start Phase ── */
-    #phase-start {
+    .home-wrap {
       min-height: calc(100vh - 56px);
+      display: flex;
+      align-items: center;
       justify-content: center;
-      padding: 32px 24px;
+      padding: 24px;
     }
 
-    .start-inner {
-      max-width: 400px;
+    .home-inner {
+      max-width: 520px;
       width: 100%;
       text-align: center;
     }
 
-    .start-icon {
-      font-size: 4rem;
-      margin-bottom: 20px;
+    .home-logo {
+      width: 64px;
+      height: 64px;
+      background: var(--accent);
+      border-radius: var(--radius-lg);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 24px rgba(37,99,235,.25);
     }
 
-    .start-title {
-      font-size: 1.5rem;
+    .home-title {
+      font-size: 2rem;
       font-weight: 600;
       color: var(--ink-hi);
+      letter-spacing: -.5px;
       margin-bottom: 8px;
     }
 
-    .start-sub {
-      font-size: .9rem;
+    .home-sub {
       color: var(--ink-lo);
-      margin-bottom: 32px;
+      font-size: 1rem;
+      margin-bottom: 40px;
+      line-height: 1.7;
     }
 
-    .session-info-box {
-      background: var(--accent-lt);
-      border: 1px solid var(--accent-mid);
-      border-radius: var(--radius-md);
-      padding: 14px 20px;
-      margin-bottom: 24px;
-      font-size: .875rem;
-      color: var(--accent);
-      font-weight: 500;
+    .home-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
     }
 
-    /* ── Reading Phase ── */
-    #phase-reading {
-      min-height: calc(100vh - 56px);
-      padding: 24px;
-      justify-content: flex-start;
-      align-items: stretch;
-    }
-
-    .reading-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 24px;
-      width: 100%;
-      max-width: 700px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    /* Timer Ring */
-    .timer-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .timer-ring-svg { transform: rotate(-90deg); }
-
-    .timer-text {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--ink-hi);
-      font-family: var(--font-mono);
-    }
-
-    .timer-label {
-      font-size: .7rem;
-      color: var(--ink-lo);
-      text-transform: uppercase;
-      letter-spacing: .05em;
-    }
-
-    /* Read Aloud Banner */
-    .read-aloud-banner {
-      position: fixed;
-      top: 56px;
-      left: 0; right: 0;
-      background: var(--accent);
-      color: white;
-      text-align: center;
-      padding: 14px 24px;
-      font-size: 1.0625rem;
-      font-weight: 600;
-      z-index: 50;
-      transform: translateY(-100%);
-      transition: transform .3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-    }
-
-    .read-aloud-banner.show { transform: translateY(0); }
-
-    .read-aloud-banner.listening { background: var(--success); }
-
-    .pulse-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: white;
-      animation: pulse 1s ease infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: .4; transform: scale(.7); }
-    }
-
-    /* Reading Area */
-    .reading-area {
-      width: 100%;
-      max-width: 700px;
-      margin: 0 auto;
-      flex: 1;
-    }
-
-    .reading-text-box {
+    .home-card {
+      display: block;
+      text-decoration: none;
       background: var(--white);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      padding: 32px;
-      min-height: 60vh;
-      font-size: 1.0625rem;
-      line-height: 1.85;
-      color: var(--ink-hi);
-      white-space: pre-wrap;
-      font-family: Georgia, serif;
-      overflow-y: auto;
+      padding: 28px 20px;
+      transition: all var(--transition);
+      cursor: pointer;
     }
 
-    .reading-hint {
-      text-align: center;
-      margin-top: 16px;
-      font-size: .8125rem;
-      color: var(--ink-xlo);
+    .home-card:hover {
+      border-color: var(--accent-mid);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
     }
 
-    /* Segment transcript log (hidden visually, used for data) */
-    #segment-log { display: none; }
-
-    /* ── Questions Phase ── */
-    #phase-questions {
-      min-height: calc(100vh - 56px);
-      padding: 24px;
-      align-items: stretch;
+    .home-card-icon {
+      font-size: 2rem;
+      margin-bottom: 12px;
     }
 
-    .questions-inner {
-      max-width: 600px;
-      width: 100%;
-      margin: 0 auto;
-    }
-
-    .q-header {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-
-    .q-header-title {
-      font-size: 1.25rem;
+    .home-card-title {
+      font-size: .9375rem;
       font-weight: 600;
       color: var(--ink-hi);
       margin-bottom: 4px;
     }
 
-    .q-progress {
-      height: 4px;
-      background: var(--border);
-      border-radius: 99px;
-      overflow: hidden;
-      margin-bottom: 32px;
+    .home-card-desc {
+      font-size: .8125rem;
+      color: var(--ink-lo);
+      line-height: 1.5;
     }
 
-    .q-progress-bar {
-      height: 100%;
-      background: var(--accent);
-      border-radius: 99px;
-      transition: width .4s ease;
+    @media (max-width: 480px) {
+      .home-cards { grid-template-columns: 1fr; }
     }
-
-    .question-card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 28px;
-      margin-bottom: 16px;
-    }
-
-    .question-text {
-      font-size: 1rem;
-      font-weight: 500;
-      color: var(--ink-hi);
-      margin-bottom: 16px;
-      line-height: 1.6;
-    }
-
-    .answer-input {
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      font-family: var(--font-sans);
-      font-size: .9375rem;
-      color: var(--ink-hi);
-      width: 100%;
-      resize: vertical;
-      min-height: 90px;
-      outline: none;
-      transition: border-color var(--transition), box-shadow var(--transition);
-    }
-
-    .answer-input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(37,99,235,.1);
-    }
-
-    .q-nav {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-
-    /* ── Done Phase ── */
-    #phase-done {
-      min-height: calc(100vh - 56px);
-      justify-content: center;
-      padding: 32px 24px;
-      text-align: center;
-    }
-
-    .done-icon { font-size: 4rem; margin-bottom: 16px; }
-    .done-title { font-size: 1.375rem; font-weight: 600; color: var(--ink-hi); margin-bottom: 8px; }
-    .done-sub { font-size: .9rem; color: var(--ink-lo); max-width: 340px; }
-
-    /* ── Loading Phase ── */
-    #phase-loading {
-      min-height: calc(100vh - 56px);
-      justify-content: center;
-      text-align: center;
-      padding: 32px;
-    }
-
-    .spinner {
-      width: 48px;
-      height: 48px;
-      border: 3px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin .8s linear infinite;
-      margin: 0 auto 20px;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
 <nav class="nav">
-  <a class="nav-brand" href="../index.html">
+  <a class="nav-brand" href="index.html">
     <div class="logo-mark">RM</div>
     <span>ReadMeter</span>
   </a>
@@ -293,511 +109,64 @@
   </div>
 </nav>
 
-<!-- ══ PHASE: START ══ -->
-<div class="phase active" id="phase-start">
-  <div class="start-inner">
-    <div class="start-icon">📖</div>
-    <h1 class="start-title" id="lbl-start-title">Okuma Oturumu</h1>
-    <p class="start-sub" id="lbl-start-sub">Kitabını hazırla ve başla. Zaman zaman sesli okuman istenecek.</p>
-    <div class="session-info-box" id="session-info-box">
-      Yükleniyor…
-    </div>
-    <button class="btn btn-primary btn-lg w-full" id="btn-start">
-      <span id="lbl-btn-start">Okumaya Başla</span>
-    </button>
-  </div>
-</div>
+<div class="home-wrap">
+  <div class="home-inner">
+    <div class="home-logo">📖</div>
+    <h1 class="home-title">ReadMeter</h1>
+    <p class="home-sub" id="home-sub">
+      Okuma verimini ölç. Dikkati takip et. Gelişimi gör.
+    </p>
 
-<!-- ══ PHASE: READING ══ -->
-<div class="phase" id="phase-reading">
-  <div class="read-aloud-banner" id="read-aloud-banner">
-    <div class="pulse-dot" id="pulse-dot" style="display:none;"></div>
-    <span id="read-aloud-text">🔔 Şimdi sesli oku!</span>
-  </div>
-
-  <div class="reading-header">
-    <div class="timer-wrap">
-      <svg class="timer-ring-svg" width="72" height="72" viewBox="0 0 72 72">
-        <circle cx="36" cy="36" r="30" fill="none" stroke="var(--border)" stroke-width="5"/>
-        <circle id="timer-arc" cx="36" cy="36" r="30" fill="none"
-                stroke="var(--accent)" stroke-width="5"
-                stroke-dasharray="188.5" stroke-dashoffset="0"
-                stroke-linecap="round"/>
-      </svg>
-      <div class="timer-text" id="timer-display">20:00</div>
-      <div class="timer-label" id="lbl-time-left">Kalan Süre</div>
-    </div>
-    <div style="display:flex; gap:8px;">
-      <div class="badge badge-blue" id="segment-badge">0 segment</div>
-    </div>
-  </div>
-
-  <div class="reading-area">
-    <div class="reading-text-box" id="reading-text-box"
-         contenteditable="false"
-         placeholder="Kitabınızı buraya yapıştırabilirsiniz…">
-    </div>
-    <p class="reading-hint" id="lbl-reading-hint">Kitabını oku — sesli okuma sinyalini bekliyoruz 🔔</p>
-  </div>
-</div>
-
-<!-- ══ PHASE: LOADING (generating questions) ══ -->
-<div class="phase" id="phase-loading">
-  <div class="spinner"></div>
-  <p style="font-size:1rem; color:var(--ink-mid);" id="lbl-loading-msg">Sorular hazırlanıyor…</p>
-</div>
-
-<!-- ══ PHASE: QUESTIONS ══ -->
-<div class="phase" id="phase-questions">
-  <div class="questions-inner">
-    <div class="q-header">
-      <div class="q-header-title" id="lbl-q-header">Anlama Soruları</div>
-      <div style="font-size:.8125rem; color:var(--ink-lo); margin-top:4px;" id="lbl-q-counter"></div>
-    </div>
-    <div class="q-progress">
-      <div class="q-progress-bar" id="q-progress-bar" style="width:0%"></div>
-    </div>
-    <div id="question-container"></div>
-    <div class="q-nav">
-      <button class="btn btn-primary" id="btn-next-q">
-        <span id="lbl-btn-next">Sonraki</span>
-      </button>
+    <div class="home-cards">
+      <a class="home-card" href="parent/index.html">
+        <div class="home-card-icon">👩‍💼</div>
+        <div class="home-card-title" id="card-parent-title">Ebeveyn Paneli</div>
+        <div class="home-card-desc" id="card-parent-desc">Oturumu ayarla, raporları ve analizleri görüntüle.</div>
+      </a>
+      <a class="home-card" href="child/index.html">
+        <div class="home-card-icon">📚</div>
+        <div class="home-card-title" id="card-child-title">Okuma Ekranı</div>
+        <div class="home-card-desc" id="card-child-desc">Okumaya başla, sesliye katıl, soruları yanıtla.</div>
+      </a>
     </div>
   </div>
 </div>
 
-<!-- ══ PHASE: DONE ══ -->
-<div class="phase" id="phase-done">
-  <div class="done-icon">🎉</div>
-  <h2 class="done-title" id="lbl-done-title">Harika iş!</h2>
-  <p class="done-sub" id="lbl-done-sub">Analiz tamamlandı. Ebeveyn panelinden raporu görebilirsin.</p>
-  <a href="../index.html" class="btn btn-ghost" style="margin-top:24px;" id="lbl-done-btn">Ana Sayfaya Dön</a>
-</div>
-
-<div id="toast-container"></div>
-<div id="segment-log"></div>
-
-<script src="../app.js"></script>
+<script src="app.js"></script>
 <script>
-const { Lang, DB, callAI, showToast } = RM;
+  RM.Lang.init();
 
-// ── i18n ──
-const CT = {
-  tr: {
-    startTitle: 'Okuma Oturumu',
-    startSub: 'Kitabını hazırla ve başla. Zaman zaman sesli okuman istenecek.',
-    sessionInfo: (m) => `Bu oturum ${m} dakika sürecek.`,
-    btnStart: 'Okumaya Başla',
-    timeLeft: 'Kalan Süre',
-    segBadge: (n) => `${n} segment`,
-    hint: 'Kitabını oku — sesli okuma sinyalini bekliyoruz 🔔',
-    readAloudPrompt: '🔔 Şimdi sesli oku!',
-    readAloudListening: '🎙️ Dinleniyor…',
-    readAloudDone: '✅ Devam et, harika!',
-    loadingMsg: 'Sorular hazırlanıyor…',
-    analyzingMsg: 'Analiz yapılıyor…',
-    qHeader: 'Anlama Soruları',
-    qCounter: (n,t) => `Soru ${n} / ${t}`,
-    btnNext: 'Sonraki',
-    btnSubmit: 'Gönder',
-    tapToAnswer: 'Cevabını buraya yaz…',
-    doneTitle: 'Harika iş!',
-    doneSub: 'Analiz tamamlandı. Ebeveyn panelinden raporu görebilirsin.',
-    doneBtn: 'Ana Sayfaya Dön',
-    errorNoAI: 'AI yapılandırması eksik. Ebeveyn panelinden ayarlanmalı.',
-    errorSpeech: 'Mikrofon erişimi sağlanamadı.',
-    errorGeneral: 'Bir hata oluştu: ',
-  },
-  en: {
-    startTitle: 'Reading Session',
-    startSub: 'Get your book ready and start. You will be asked to read aloud occasionally.',
-    sessionInfo: (m) => `This session will last ${m} minutes.`,
-    btnStart: 'Start Reading',
-    timeLeft: 'Time Left',
-    segBadge: (n) => `${n} segment${n!==1?'s':''}`,
-    hint: 'Read your book — waiting for the read-aloud signal 🔔',
-    readAloudPrompt: '🔔 Read aloud now!',
-    readAloudListening: '🎙️ Listening…',
-    readAloudDone: '✅ Keep going, great!',
-    loadingMsg: 'Generating questions…',
-    analyzingMsg: 'Analysing…',
-    qHeader: 'Comprehension Questions',
-    qCounter: (n,t) => `Question ${n} / ${t}`,
-    btnNext: 'Next',
-    btnSubmit: 'Submit',
-    tapToAnswer: 'Type your answer here…',
-    doneTitle: 'Great job!',
-    doneSub: 'Analysis complete. Check the parent panel for your report.',
-    doneBtn: 'Back to Home',
-    errorNoAI: 'AI not configured. Set it up from the parent panel.',
-    errorSpeech: 'Microphone access denied.',
-    errorGeneral: 'An error occurred: ',
-  }
-};
-
-function t(key, ...args) {
-  const val = CT[Lang.get()][key];
-  return typeof val === 'function' ? val(...args) : (val ?? key);
-}
-
-function applyLang() {
-  document.getElementById('lbl-start-title').textContent = t('startTitle');
-  document.getElementById('lbl-start-sub').textContent = t('startSub');
-  document.getElementById('lbl-btn-start').textContent = t('btnStart');
-  document.getElementById('lbl-time-left').textContent = t('timeLeft');
-  document.getElementById('lbl-reading-hint').textContent = t('hint');
-  document.getElementById('lbl-q-header').textContent = t('qHeader');
-  document.getElementById('lbl-done-title').textContent = t('doneTitle');
-  document.getElementById('lbl-done-sub').textContent = t('doneSub');
-  document.getElementById('lbl-done-btn').textContent = t('doneBtn');
-}
-
-Lang.init();
-document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', applyLang));
-applyLang();
-
-// ── State ──
-let sessionDuration = 20; // minutes
-let totalSeconds = 0;
-let elapsedSeconds = 0;
-let timerInterval = null;
-let readAloudIntervalId = null;
-let segments = []; // { text, timestamp, attention? }
-let questions = []; // { question, correctAnswer }
-let userAnswers = []; // { userAnswer }
-let currentQuestionIndex = 0;
-let isListening = false;
-let recognition = null;
-
-// ── Phase management ──
-function showPhase(id) {
-  document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-// ── Load session settings ──
-async function init() {
-  try {
-    const data = await DB.read();
-    sessionDuration = data.settings?.sessionDuration || 20;
-  } catch(e) {
-    sessionDuration = 20;
-  }
-  document.getElementById('session-info-box').textContent = t('sessionInfo', sessionDuration);
-  totalSeconds = sessionDuration * 60;
-  updateTimerDisplay(totalSeconds);
-}
-
-init();
-
-// ── Start ──
-document.getElementById('btn-start').addEventListener('click', () => {
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    showToast(t('errorSpeech'), 'error');
-    return;
-  }
-  showPhase('phase-reading');
-  startTimer();
-  scheduleNextReadAloud();
-});
-
-// ── Timer ──
-function startTimer() {
-  elapsedSeconds = 0;
-  updateTimerDisplay(totalSeconds);
-  timerInterval = setInterval(() => {
-    elapsedSeconds++;
-    const remaining = totalSeconds - elapsedSeconds;
-    updateTimerDisplay(remaining);
-    updateTimerRing(remaining);
-    if (remaining <= 0) {
-      clearInterval(timerInterval);
-      clearTimeout(readAloudIntervalId);
-      // Aktif recognition varsa durdur
-      if (recognition) { try { recognition.stop(); } catch(e) {} }
-      // Banner'ı kapat
-      document.getElementById('read-aloud-banner').classList.remove('show');
-      onSessionEnd();
+  const homeTexts = {
+    tr: {
+      sub: 'Okuma verimini ölç. Dikkati takip et. Gelişimi gör.',
+      parentTitle: 'Ebeveyn Paneli',
+      parentDesc: 'Oturumu ayarla, raporları ve analizleri görüntüle.',
+      childTitle: 'Okuma Ekranı',
+      childDesc: 'Okumaya başla, sesli okumaya katıl, soruları yanıtla.'
+    },
+    en: {
+      sub: 'Measure reading efficiency. Track attention. See progress.',
+      parentTitle: 'Parent Panel',
+      parentDesc: 'Set session duration, view reports and attention analysis.',
+      childTitle: 'Reading Screen',
+      childDesc: 'Start reading, read aloud on cue, answer comprehension questions.'
     }
-  }, 1000);
-}
-
-function updateTimerDisplay(secs) {
-  const m = Math.floor(secs / 60);
-  const s = secs % 60;
-  document.getElementById('timer-display').textContent =
-    String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-}
-
-function updateTimerRing(remaining) {
-  const arc = document.getElementById('timer-arc');
-  const circumference = 188.5;
-  const fraction = remaining / totalSeconds;
-  arc.style.strokeDashoffset = circumference * (1 - fraction);
-  arc.style.stroke = fraction > .5 ? 'var(--accent)' : fraction > .25 ? 'var(--warn)' : 'var(--danger)';
-}
-
-// ── Read Aloud ──
-function scheduleNextReadAloud() {
-  // Random interval between 2.5 and 5 minutes (or 30-60s if session < 5min)
-  const minGap = sessionDuration < 5 ? 30 : 150;
-  const maxGap = sessionDuration < 5 ? 60 : 300;
-  const delay = (Math.random() * (maxGap - minGap) + minGap) * 1000;
-  readAloudIntervalId = setTimeout(() => {
-    triggerReadAloud();
-  }, delay);
-}
-
-function triggerReadAloud() {
-  if (isListening) return;
-  const banner = document.getElementById('read-aloud-banner');
-  const bannerText = document.getElementById('read-aloud-text');
-  const pulseDot = document.getElementById('pulse-dot');
-
-  // Show prompt
-  bannerText.textContent = t('readAloudPrompt');
-  banner.className = 'read-aloud-banner show';
-  pulseDot.style.display = 'none';
-
-  // Wait 2s then start listening
-  setTimeout(() => {
-    bannerText.textContent = t('readAloudListening');
-    banner.className = 'read-aloud-banner show listening';
-    pulseDot.style.display = 'block';
-    startSpeechRecognition((transcript) => {
-      // Store segment
-      const seg = {
-        text: transcript,
-        timestamp: elapsedSeconds,
-        attention: null
-      };
-      segments.push(seg);
-      document.getElementById('segment-badge').textContent = t('segBadge', segments.length);
-
-      // Show done
-      bannerText.textContent = t('readAloudDone');
-      banner.className = 'read-aloud-banner show';
-      pulseDot.style.display = 'none';
-
-      setTimeout(() => {
-        banner.classList.remove('show');
-        // Schedule next if time remains
-        const remaining = totalSeconds - elapsedSeconds;
-        if (remaining > 30) scheduleNextReadAloud();
-      }, 2000);
-    });
-  }, 2000);
-}
-
-function startSpeechRecognition(onResult) {
-  isListening = true;
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SpeechRecognition();
-  recognition.lang = Lang.get() === 'tr' ? 'tr-TR' : 'en-US';
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-
-  let transcript = '';
-  const timeout = setTimeout(() => {
-    recognition.stop();
-  }, 9000); // max 9s
-
-  recognition.onresult = (e) => {
-    transcript = e.results[0][0].transcript;
   };
 
-  recognition.onend = () => {
-    clearTimeout(timeout);
-    isListening = false;
-    onResult(transcript || '[anlaşılamadı]');
-  };
-
-  recognition.onerror = (e) => {
-    clearTimeout(timeout);
-    isListening = false;
-    onResult('[mikrofon hatası]');
-  };
-
-  recognition.start();
-}
-
-// ── Session End → Generate Questions ──
-async function onSessionEnd() {
-  clearTimeout(readAloudIntervalId);
-  showPhase('phase-loading');
-  document.getElementById('lbl-loading-msg').textContent = t('loadingMsg');
-
-  if (segments.length === 0) {
-    // No segments recorded, still try to generate generic questions
-    segments.push({ text: '[Ses kaydı alınamadı]', timestamp: 0, attention: 50 });
+  function applyHome() {
+    const lang = RM.Lang.get();
+    const t = homeTexts[lang];
+    document.getElementById('home-sub').textContent = t.sub;
+    document.getElementById('card-parent-title').textContent = t.parentTitle;
+    document.getElementById('card-parent-desc').textContent = t.parentDesc;
+    document.getElementById('card-child-title').textContent = t.childTitle;
+    document.getElementById('card-child-desc').textContent = t.childDesc;
   }
 
-  const allText = segments.map((s, i) => `[Segment ${i+1}]: ${s.text}`).join('\n');
-  const lang = Lang.get() === 'tr' ? 'Türkçe' : 'English';
-
-  const prompt = `You are an educational assistant. A student just finished a reading session.
-Here are transcriptions of what they read aloud at various points during their reading:
-
-${allText}
-
-Based on these excerpts, generate exactly 7 comprehension questions to test understanding.
-Respond in ${lang}.
-Return ONLY a JSON array, no explanation, no markdown. Format:
-[
-  {"question": "...", "correctAnswer": "..."},
-  ...
-]`;
-
-  try {
-    const raw = await callAI(prompt);
-    // Parse JSON
-    const cleaned = raw.replace(/```json|```/g, '').trim();
-    questions = JSON.parse(cleaned);
-    if (!Array.isArray(questions) || questions.length === 0) throw new Error('Invalid questions');
-    userAnswers = questions.map(() => ({ userAnswer: '' }));
-    currentQuestionIndex = 0;
-    showQuestion(0);
-    showPhase('phase-questions');
-  } catch(e) {
-    if (e.message === 'no_api_key') {
-      showToast(t('errorNoAI'), 'error');
-    } else {
-      showToast(t('errorGeneral') + e.message, 'error');
-    }
-    // Fallback: go to done anyway
-    await saveFallbackReport();
-    showPhase('phase-done');
-  }
-}
-
-// ── Questions ──
-function showQuestion(idx) {
-  const q = questions[idx];
-  const total = questions.length;
-
-  document.getElementById('lbl-q-counter').textContent = t('qCounter', idx + 1, total);
-  document.getElementById('q-progress-bar').style.width = ((idx / total) * 100) + '%';
-
-  const container = document.getElementById('question-container');
-  container.innerHTML = `
-    <div class="question-card">
-      <div class="question-text">${q.question}</div>
-      <textarea class="answer-input" id="answer-input" placeholder="${t('tapToAnswer')}">${userAnswers[idx].userAnswer}</textarea>
-    </div>`;
-
-  const isLast = idx === total - 1;
-  document.getElementById('lbl-btn-next').textContent = isLast ? t('btnSubmit') : t('btnNext');
-}
-
-document.getElementById('btn-next-q').addEventListener('click', async () => {
-  // Save current answer
-  const input = document.getElementById('answer-input');
-  if (input) userAnswers[currentQuestionIndex].userAnswer = input.value.trim();
-
-  if (currentQuestionIndex < questions.length - 1) {
-    currentQuestionIndex++;
-    showQuestion(currentQuestionIndex);
-  } else {
-    // All answered → analyse
-    document.getElementById('q-progress-bar').style.width = '100%';
-    await analyzeAndSave();
-  }
-});
-
-// ── Analyse & Save ──
-async function analyzeAndSave() {
-  showPhase('phase-loading');
-  document.getElementById('lbl-loading-msg').textContent = t('analyzingMsg');
-
-  const lang = Lang.get() === 'tr' ? 'Türkçe' : 'English';
-  const allText = segments.map((s, i) => `[Segment ${i+1} @ ${s.timestamp}s]: ${s.text}`).join('\n');
-
-  const qaText = questions.map((q, i) => {
-    const ans = userAnswers[i]?.userAnswer || '–';
-    return `Q${i+1}: ${q.question}\nCorrect: ${q.correctAnswer}\nStudent: ${ans}`;
-  }).join('\n\n');
-
-  const analysisPrompt = `You are an educational analyst. Evaluate a student's reading comprehension session.
-
-TRANSCRIBED SEGMENTS (what they read aloud at various timestamps):
-${allText}
-
-QUESTIONS & ANSWERS:
-${qaText}
-
-Respond in ${lang}.
-Provide:
-1. A score from 0-100 reflecting overall comprehension
-2. For each segment, an attention score 0-100 (did their reading seem focused and fluent?)
-3. For each Q&A, whether the student answer is "correct", "wrong", or "skipped"
-4. A 3-5 sentence narrative analysis describing attention patterns and comprehension
-
-Return ONLY this JSON (no markdown):
-{
-  "score": 75,
-  "segments": [{"attention": 80}, {"attention": 45}],
-  "qa": [
-    {"result": "correct"},
-    {"result": "wrong"},
-    {"result": "skipped"}
-  ],
-  "aiAnalysis": "The student..."
-}`;
-
-  try {
-    const raw = await callAI(analysisPrompt);
-    const cleaned = raw.replace(/```json|```/g, '').trim();
-    const result = JSON.parse(cleaned);
-
-    // Merge segment attention scores
-    segments.forEach((seg, i) => {
-      seg.attention = result.segments?.[i]?.attention ?? 50;
-    });
-
-    // Merge QA results
-    const finalQA = questions.map((q, i) => ({
-      question: q.question,
-      correctAnswer: q.correctAnswer,
-      userAnswer: userAnswers[i]?.userAnswer || '',
-      result: result.qa?.[i]?.result || 'skipped'
-    }));
-
-    await saveReport({
-      score: result.score || 0,
-      segments,
-      qa: finalQA,
-      aiAnalysis: result.aiAnalysis || '–'
-    });
-
-    showPhase('phase-done');
-  } catch(e) {
-    showToast(t('errorGeneral') + e.message, 'error');
-    await saveFallbackReport();
-    showPhase('phase-done');
-  }
-}
-
-async function saveReport(payload) {
-  const data = await DB.read();
-  if (!data.sessions) data.sessions = [];
-  data.sessions.push({
-    date: new Date().toISOString(),
-    durationMinutes: sessionDuration,
-    ...payload
+  applyHome();
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.addEventListener('click', () => { applyHome(); });
   });
-  await DB.write(data);
-}
-
-async function saveFallbackReport() {
-  try {
-    await saveReport({
-      score: 0,
-      segments: segments,
-      qa: [],
-      aiAnalysis: 'Analiz tamamlanamadı.'
-    });
-  } catch(e) { console.warn('Fallback save failed', e); }
-}
 </script>
 </body>
 </html>
