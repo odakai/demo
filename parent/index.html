@@ -1,1 +1,710 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReadMeter · Ebeveyn</title>
+  <link rel="stylesheet" href="../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .page-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
 
+    .page-header {
+      margin-bottom: 32px;
+    }
+
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--ink-hi);
+      letter-spacing: -.3px;
+    }
+
+    .page-sub {
+      font-size: .875rem;
+      color: var(--ink-lo);
+      margin-top: 4px;
+    }
+
+    /* Settings Card */
+    .settings-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .settings-row .form-group { flex: 1; min-width: 160px; }
+
+    /* Reports Section */
+    .section-heading {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ink-hi);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .report-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .report-item {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .report-item:hover {
+      border-color: var(--accent-mid);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .report-item-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .report-meta {
+      font-size: .8125rem;
+      color: var(--ink-lo);
+      margin-top: 4px;
+    }
+
+    .score-pill {
+      min-width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: .9375rem;
+      flex-shrink: 0;
+    }
+
+    .score-high { background: var(--success-lt); color: var(--success); }
+    .score-mid  { background: var(--warn-lt);    color: var(--warn); }
+    .score-low  { background: var(--danger-lt);  color: var(--danger); }
+
+    /* Detail Modal */
+    .detail-modal .modal { width: min(700px, 94vw); max-height: 90vh; overflow-y: auto; }
+
+    .detail-tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    .detail-tab {
+      padding: 8px 14px;
+      font-size: .8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      border-bottom: 2px solid transparent;
+      color: var(--ink-lo);
+      font-family: var(--font-sans);
+      transition: all var(--transition);
+      margin-bottom: -1px;
+    }
+
+    .detail-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Attention Map */
+    .attention-segments {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .attention-seg {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: .8125rem;
+    }
+
+    .seg-bar-wrap {
+      flex: 1;
+      height: 8px;
+      background: var(--surface);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .seg-bar {
+      height: 100%;
+      border-radius: 99px;
+      transition: width .6s ease;
+    }
+
+    .seg-bar.high   { background: var(--success); }
+    .seg-bar.medium { background: var(--warn); }
+    .seg-bar.low    { background: var(--danger); }
+
+    .seg-label { min-width: 100px; color: var(--ink-mid); }
+    .seg-pct { min-width: 36px; text-align: right; color: var(--ink-lo); font-family: var(--font-mono); font-size: .75rem; }
+
+    /* Q&A */
+    .qa-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+
+    .qa-question { font-weight: 500; font-size: .875rem; color: var(--ink-hi); margin-bottom: 8px; }
+    .qa-answer   { font-size: .8125rem; color: var(--ink-mid); margin-bottom: 6px; }
+    .qa-correct  { font-size: .75rem; color: var(--ink-lo); }
+
+    /* Chart */
+    .chart-wrap { position: relative; height: 180px; }
+
+    /* Secret trigger */
+    #secret-zone {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 40px;
+      height: 40px;
+      cursor: default;
+      z-index: 200;
+    }
+
+    /* Secret panel */
+    .secret-panel {
+      position: fixed;
+      bottom: 48px;
+      left: 16px;
+      width: 300px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-lg);
+      z-index: 300;
+      display: none;
+    }
+
+    .secret-panel.open { display: block; }
+
+    .secret-title {
+      font-size: .8125rem;
+      font-weight: 600;
+      color: var(--ink-lo);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 14px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--ink-xlo);
+    }
+
+    .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .empty-text { font-size: .9rem; }
+
+    .ai-analysis-box {
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      font-size: .875rem;
+      color: var(--ink-mid);
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-brand" href="../index.html">
+    <div class="logo-mark">RM</div>
+    <span>ReadMeter</span>
+  </a>
+  <div class="nav-right">
+    <a href="../child/index.html" class="btn btn-ghost" style="font-size:.8125rem;" id="nav-child-link">Okuma Ekranı</a>
+    <div class="lang-toggle">
+      <button class="lang-btn" data-lang="tr">TR</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+    </div>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1 class="page-title" id="lbl-page-title">Ebeveyn Paneli</h1>
+    <p class="page-sub" id="lbl-page-sub">Oturum ayarlarını yönet, okuma raporlarını incele.</p>
+  </div>
+
+  <!-- Session Settings -->
+  <div class="card" style="margin-bottom:24px;">
+    <div class="section-heading" style="margin-bottom:16px;">
+      <span id="lbl-settings">Oturum Ayarları</span>
+    </div>
+    <div class="settings-row">
+      <div class="form-group">
+        <label class="form-label" id="lbl-duration">Oturum Süresi (dakika)</label>
+        <input class="form-input" type="number" id="inp-duration" min="5" max="120" value="20" style="max-width:140px;">
+      </div>
+      <button class="btn btn-primary" id="btn-save-settings">
+        <span id="lbl-save">Kaydet</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Reports -->
+  <div class="section-heading">
+    <span id="lbl-reports">Raporlar</span>
+    <button class="btn btn-ghost" id="btn-refresh" style="font-size:.8rem; padding:6px 12px;">↻</button>
+  </div>
+
+  <div id="reports-container">
+    <div class="empty-state">
+      <div class="empty-icon">⏳</div>
+      <div class="empty-text" id="lbl-loading">Raporlar yükleniyor…</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay detail-modal hidden" id="detail-modal">
+  <div class="modal" style="width:min(700px,94vw); max-height:90vh; overflow-y:auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h2 class="modal-title" style="margin:0;" id="modal-title">Rapor Detayı</h2>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-ghost" style="color:var(--danger); border-color:var(--danger);" id="btn-delete-report">
+          <span id="lbl-delete">Sil</span>
+        </button>
+        <button class="btn btn-ghost" id="btn-close-modal">✕</button>
+      </div>
+    </div>
+
+    <div class="detail-tabs">
+      <button class="detail-tab active" data-tab="overview" id="tab-overview">Genel Bakış</button>
+      <button class="detail-tab" data-tab="attention" id="tab-attention">Dikkat Haritası</button>
+      <button class="detail-tab" data-tab="qa" id="tab-qa">Sorular</button>
+      <button class="detail-tab" data-tab="analysis" id="tab-analysis">AI Analizi</button>
+    </div>
+
+    <!-- Overview Tab -->
+    <div class="tab-panel active" id="panel-overview">
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:20px;">
+        <div class="card" style="text-align:center; padding:16px;">
+          <div style="font-size:2rem; font-weight:700; color:var(--accent);" id="ov-score">–</div>
+          <div style="font-size:.75rem; color:var(--ink-lo); margin-top:4px;" id="lbl-ov-score">Genel Skor</div>
+        </div>
+        <div class="card" style="text-align:center; padding:16px;">
+          <div style="font-size:2rem; font-weight:700; color:var(--success);" id="ov-correct">–</div>
+          <div style="font-size:.75rem; color:var(--ink-lo); margin-top:4px;" id="lbl-ov-correct">Doğru</div>
+        </div>
+        <div class="card" style="text-align:center; padding:16px;">
+          <div style="font-size:2rem; font-weight:700; color:var(--danger);" id="ov-wrong">–</div>
+          <div style="font-size:.75rem; color:var(--ink-lo); margin-top:4px;" id="lbl-ov-wrong">Yanlış</div>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="score-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Attention Tab -->
+    <div class="tab-panel" id="panel-attention">
+      <p style="font-size:.8125rem; color:var(--ink-lo); margin-bottom:16px;" id="lbl-attn-desc">
+        Her sesli okuma segmentinin dikkat skoru (AI değerlendirmesine göre).
+      </p>
+      <div class="attention-segments" id="attention-segments"></div>
+    </div>
+
+    <!-- Q&A Tab -->
+    <div class="tab-panel" id="panel-qa">
+      <div id="qa-list"></div>
+    </div>
+
+    <!-- Analysis Tab -->
+    <div class="tab-panel" id="panel-analysis">
+      <div class="ai-analysis-box" id="analysis-text">–</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Secret Panel (3 clicks on bottom-left) -->
+<div id="secret-zone"></div>
+
+<div class="secret-panel" id="secret-panel">
+  <div class="secret-title">⚙️ AI Ayarları</div>
+  <div class="form-group" style="margin-bottom:10px;">
+    <label class="form-label" id="lbl-ai-provider">AI Sağlayıcı</label>
+    <select class="form-select" id="sel-provider">
+      <option value="openai">OpenAI (GPT-4o mini)</option>
+      <option value="gemini">Google Gemini</option>
+    </select>
+  </div>
+  <div class="form-group" style="margin-bottom:14px;">
+    <label class="form-label" id="lbl-api-key">API Anahtarı</label>
+    <input class="form-input" type="password" id="inp-api-key" placeholder="sk-…">
+  </div>
+  <button class="btn btn-primary w-full" id="btn-save-secret">
+    <span id="lbl-save-secret">Kaydet</span>
+  </button>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="../app.js"></script>
+<script>
+const { Lang, DB, showToast } = RM;
+
+// ── i18n texts ──
+const PT = {
+  tr: {
+    pageTitle: 'Ebeveyn Paneli',
+    pageSub: 'Oturum ayarlarını yönet, okuma raporlarını incele.',
+    settings: 'Oturum Ayarları',
+    duration: 'Oturum Süresi (dakika)',
+    save: 'Kaydet',
+    reports: 'Raporlar',
+    loading: 'Raporlar yükleniyor…',
+    noReports: 'Henüz tamamlanan oturum yok.',
+    delete: 'Sil',
+    reportDeleted: 'Rapor silindi',
+    settingsSaved: 'Ayarlar kaydedildi',
+    secretSaved: 'API bilgileri kaydedildi',
+    modalTitle: 'Rapor Detayı',
+    tabOverview: 'Genel Bakış',
+    tabAttention: 'Dikkat Haritası',
+    tabQA: 'Sorular',
+    tabAnalysis: 'AI Analizi',
+    ovScore: 'Genel Skor',
+    ovCorrect: 'Doğru',
+    ovWrong: 'Yanlış',
+    attnDesc: 'Her sesli okuma segmentinin dikkat skoru (AI değerlendirmesine göre).',
+    aiProvider: 'AI Sağlayıcı',
+    apiKey: 'API Anahtarı',
+    saveSecret: 'Kaydet',
+    focusGood: 'İyi odaklandı',
+    focusMed: 'Orta dikkat',
+    focusLow: 'Dikkat dağınık',
+    correct: 'Doğru', wrong: 'Yanlış', skipped: 'Geçildi',
+    yourAnswer: 'Cevabın', correctAnswer: 'Doğru cevap',
+    minutes: 'dk', dateLabel: 'Tarih',
+    childLink: 'Okuma Ekranı',
+  },
+  en: {
+    pageTitle: 'Parent Panel',
+    pageSub: 'Manage session settings, review reading reports.',
+    settings: 'Session Settings',
+    duration: 'Session Duration (minutes)',
+    save: 'Save',
+    reports: 'Reports',
+    loading: 'Loading reports…',
+    noReports: 'No completed sessions yet.',
+    delete: 'Delete',
+    reportDeleted: 'Report deleted',
+    settingsSaved: 'Settings saved',
+    secretSaved: 'API credentials saved',
+    modalTitle: 'Report Detail',
+    tabOverview: 'Overview',
+    tabAttention: 'Attention Map',
+      tabQA: 'Questions',
+    tabAnalysis: 'AI Analysis',
+    ovScore: 'Overall Score',
+    ovCorrect: 'Correct',
+    ovWrong: 'Wrong',
+    attnDesc: 'Attention score for each read-aloud segment (AI evaluation).',
+    aiProvider: 'AI Provider',
+    apiKey: 'API Key',
+    saveSecret: 'Save',
+    focusGood: 'Well focused',
+    focusMed: 'Moderate attention',
+    focusLow: 'Distracted',
+    correct: 'Correct', wrong: 'Wrong', skipped: 'Skipped',
+    yourAnswer: 'Your answer', correctAnswer: 'Correct answer',
+    minutes: 'min', dateLabel: 'Date',
+    childLink: 'Reading Screen',
+  }
+};
+
+function applyLang() {
+  const t = PT[Lang.get()];
+  document.getElementById('lbl-page-title').textContent = t.pageTitle;
+  document.getElementById('lbl-page-sub').textContent = t.pageSub;
+  document.getElementById('lbl-settings').textContent = t.settings;
+  document.getElementById('lbl-duration').textContent = t.duration;
+  document.getElementById('lbl-save').textContent = t.save;
+  document.getElementById('lbl-reports').textContent = t.reports;
+  document.getElementById('lbl-delete').textContent = t.delete;
+  document.getElementById('modal-title').textContent = t.modalTitle;
+  document.getElementById('tab-overview').textContent = t.tabOverview;
+  document.getElementById('tab-attention').textContent = t.tabAttention;
+  document.getElementById('tab-qa').textContent = t.tabQA;
+  document.getElementById('tab-analysis').textContent = t.tabAnalysis;
+  document.getElementById('lbl-ov-score').textContent = t.ovScore;
+  document.getElementById('lbl-ov-correct').textContent = t.ovCorrect;
+  document.getElementById('lbl-ov-wrong').textContent = t.ovWrong;
+  document.getElementById('lbl-attn-desc').textContent = t.attnDesc;
+  document.getElementById('lbl-ai-provider').textContent = t.aiProvider;
+  document.getElementById('lbl-api-key').textContent = t.apiKey;
+  document.getElementById('lbl-save-secret').textContent = t.saveSecret;
+  document.getElementById('nav-child-link').textContent = t.childLink;
+}
+
+Lang.init();
+document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', () => { applyLang(); loadReports(); }));
+applyLang();
+
+// ── Load settings ──
+async function loadSettings() {
+  try {
+    const data = await DB.read();
+    const s = data.settings || {};
+    document.getElementById('inp-duration').value = s.sessionDuration || 20;
+    if (s.aiProvider) document.getElementById('sel-provider').value = s.aiProvider;
+    if (s.apiKey) document.getElementById('inp-api-key').value = s.apiKey;
+  } catch(e) { console.warn('Settings load failed', e); }
+}
+
+// ── Save session duration ──
+document.getElementById('btn-save-settings').addEventListener('click', async () => {
+  const t = PT[Lang.get()];
+  const dur = parseInt(document.getElementById('inp-duration').value) || 20;
+  try {
+    const data = await DB.read();
+    data.settings = { ...(data.settings || {}), sessionDuration: dur };
+    await DB.write(data);
+    showToast(t.settingsSaved, 'success');
+  } catch(e) { showToast('Hata: ' + e.message, 'error'); }
+});
+
+// ── Reports ──
+let currentReportIndex = null;
+let scoreChartInstance = null;
+
+async function loadReports() {
+  const t = PT[Lang.get()];
+  const container = document.getElementById('reports-container');
+  container.innerHTML = `<div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-text">${t.loading}</div></div>`;
+  try {
+    const data = await DB.read();
+    const sessions = (data.sessions || []).slice().reverse();
+    if (!sessions.length) {
+      container.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">${t.noReports}</div></div>`;
+      return;
+    }
+    container.innerHTML = '';
+    const list = document.createElement('div');
+    list.className = 'report-list';
+    sessions.forEach((s, idx) => {
+      const score = s.score ?? 0;
+      const scoreClass = score >= 70 ? 'score-high' : score >= 40 ? 'score-mid' : 'score-low';
+      const date = new Date(s.date).toLocaleDateString(Lang.get() === 'tr' ? 'tr-TR' : 'en-GB');
+      const dur = s.durationMinutes ?? '–';
+
+      const item = document.createElement('div');
+      item.className = 'report-item';
+      item.innerHTML = `
+        <div class="report-item-header">
+          <div>
+            <div style="font-weight:600; color:var(--ink-hi); font-size:.9375rem;">
+              ${t.dateLabel}: ${date}
+            </div>
+            <div class="report-meta">${dur} ${t.minutes}</div>
+          </div>
+          <div class="score-pill ${scoreClass}">${score}%</div>
+        </div>`;
+      item.addEventListener('click', () => openDetail(sessions.length - 1 - idx, s));
+      list.appendChild(item);
+    });
+    container.appendChild(list);
+  } catch(e) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">${e.message}</div></div>`;
+  }
+}
+
+function openDetail(originalIndex, session) {
+  currentReportIndex = originalIndex;
+  const t = PT[Lang.get()];
+
+  // Overview
+  const score = session.score ?? 0;
+  document.getElementById('ov-score').textContent = score + '%';
+  const qa = session.qa || [];
+  const correct = qa.filter(q => q.result === 'correct').length;
+  const wrong   = qa.filter(q => q.result === 'wrong').length;
+  document.getElementById('ov-correct').textContent = correct;
+  document.getElementById('ov-wrong').textContent = wrong;
+
+  // Chart
+  if (scoreChartInstance) scoreChartInstance.destroy();
+  const ctx = document.getElementById('score-chart').getContext('2d');
+  scoreChartInstance = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: [t.correct, t.wrong, t.skipped],
+      datasets: [{
+        data: [correct, wrong, qa.length - correct - wrong],
+        backgroundColor: ['#16a34a', '#dc2626', '#9ca3af'],
+        borderWidth: 0,
+        hoverOffset: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { font: { family: 'DM Sans', size: 12 }, padding: 16 } }
+      },
+      cutout: '68%'
+    }
+  });
+
+  // Attention Map
+  const segments = session.segments || [];
+  const attnContainer = document.getElementById('attention-segments');
+  attnContainer.innerHTML = '';
+  if (segments.length === 0) {
+    attnContainer.innerHTML = `<p style="color:var(--ink-xlo); font-size:.875rem;">–</p>`;
+  } else {
+    segments.forEach((seg, i) => {
+      const level = seg.attention ?? 50;
+      const cls = level >= 70 ? 'high' : level >= 40 ? 'medium' : 'low';
+      const label = level >= 70 ? t.focusGood : level >= 40 ? t.focusMed : t.focusLow;
+      attnContainer.innerHTML += `
+        <div class="attention-seg">
+          <span class="seg-label">#${i+1} — ${label}</span>
+          <div class="seg-bar-wrap"><div class="seg-bar ${cls}" style="width:${level}%"></div></div>
+          <span class="seg-pct">${level}%</span>
+        </div>`;
+    });
+  }
+
+  // Q&A
+  const qaList = document.getElementById('qa-list');
+  qaList.innerHTML = '';
+  qa.forEach((q, i) => {
+    const resultBadge = q.result === 'correct'
+      ? `<span class="badge badge-green">${t.correct}</span>`
+      : q.result === 'wrong'
+        ? `<span class="badge badge-red">${t.wrong}</span>`
+        : `<span class="badge">${t.skipped}</span>`;
+    qaList.innerHTML += `
+      <div class="qa-item">
+        <div class="qa-question">${i+1}. ${q.question}</div>
+        <div class="qa-answer">${t.yourAnswer}: ${q.userAnswer || '–'} ${resultBadge}</div>
+        ${q.correctAnswer ? `<div class="qa-correct">${t.correctAnswer}: ${q.correctAnswer}</div>` : ''}
+      </div>`;
+  });
+
+  // AI Analysis
+  document.getElementById('analysis-text').textContent = session.aiAnalysis || '–';
+
+  // Reset tabs
+  document.querySelectorAll('.detail-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelector('[data-tab="overview"]').classList.add('active');
+  document.getElementById('panel-overview').classList.add('active');
+
+  document.getElementById('detail-modal').classList.remove('hidden');
+}
+
+// Tab switching
+document.querySelectorAll('.detail-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.detail-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+document.getElementById('btn-close-modal').addEventListener('click', () => {
+  document.getElementById('detail-modal').classList.add('hidden');
+});
+
+// Delete report
+document.getElementById('btn-delete-report').addEventListener('click', async () => {
+  if (currentReportIndex === null) return;
+  const t = PT[Lang.get()];
+  try {
+    const data = await DB.read();
+    data.sessions.splice(currentReportIndex, 1);
+    await DB.write(data);
+    document.getElementById('detail-modal').classList.add('hidden');
+    showToast(t.reportDeleted, 'success');
+    loadReports();
+  } catch(e) { showToast(e.message, 'error'); }
+});
+
+// Refresh
+document.getElementById('btn-refresh').addEventListener('click', loadReports);
+
+// ── Secret Panel ──
+let secretClicks = 0;
+let secretTimer = null;
+const secretZone = document.getElementById('secret-zone');
+const secretPanel = document.getElementById('secret-panel');
+
+secretZone.addEventListener('click', () => {
+  secretClicks++;
+  clearTimeout(secretTimer);
+  secretTimer = setTimeout(() => { secretClicks = 0; }, 1200);
+  if (secretClicks >= 3) {
+    secretClicks = 0;
+    secretPanel.classList.toggle('open');
+  }
+});
+
+document.getElementById('btn-save-secret').addEventListener('click', async () => {
+  const t = PT[Lang.get()];
+  const provider = document.getElementById('sel-provider').value;
+  const key = document.getElementById('inp-api-key').value.trim();
+  try {
+    const data = await DB.read();
+    data.settings = { ...(data.settings || {}), aiProvider: provider, apiKey: key };
+    await DB.write(data);
+    showToast(t.secretSaved, 'success');
+    secretPanel.classList.remove('open');
+  } catch(e) { showToast(e.message, 'error'); }
+});
+
+// Close secret panel on outside click
+document.addEventListener('click', (e) => {
+  if (!secretPanel.contains(e.target) && e.target !== secretZone) {
+    secretPanel.classList.remove('open');
+  }
+});
+
+// ── Init ──
+loadSettings();
+loadReports();
+</script>
+</body>
+</html>
