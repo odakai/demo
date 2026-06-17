@@ -543,11 +543,37 @@ function updateTimerRing(remaining) {
 }
 
 // ── Read Aloud ──
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    // Üç kısa bip: dıt dıt dıiiit
+    const beeps = [
+      { freq: 880, start: 0,    dur: 0.12 },
+      { freq: 880, start: 0.18, dur: 0.12 },
+      { freq: 1100, start: 0.36, dur: 0.35 },
+    ];
+    beeps.forEach(({ freq, start, dur }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, ctx.currentTime + start);
+      gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + start + 0.01);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + start + dur);
+      osc.start(ctx.currentTime + start);
+      osc.stop(ctx.currentTime + start + dur + 0.05);
+    });
+  } catch(e) { console.warn('Ses çalınamadı:', e); }
+}
+
 function scheduleNextReadAloud() {
-  // Random interval between 2.5 and 5 minutes (or 30-60s if session < 5min)
-  const minGap = sessionDuration < 5 ? 30 : 150;
-  const maxGap = sessionDuration < 5 ? 60 : 300;
+  const totalSecs = sessionDuration * 60;
+  const minGap = Math.max(20, Math.floor(totalSecs * 0.15));
+  const maxGap = Math.max(40, Math.floor(totalSecs * 0.25));
   const delay = (Math.random() * (maxGap - minGap) + minGap) * 1000;
+  console.log(`[ReadMeter] Sonraki sinyal ${Math.round(delay/1000)}sn sonra`);
   readAloudIntervalId = setTimeout(() => {
     triggerReadAloud();
   }, delay);
@@ -558,6 +584,9 @@ function triggerReadAloud() {
   const banner = document.getElementById('read-aloud-banner');
   const bannerText = document.getElementById('read-aloud-text');
   const pulseDot = document.getElementById('pulse-dot');
+
+  // Sesli sinyal: dıt dıt dıiiit
+  playBeep();
 
   // Show prompt
   bannerText.textContent = t('readAloudPrompt');
