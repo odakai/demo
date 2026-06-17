@@ -381,8 +381,11 @@
 
 <script src="../app.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-// RM global olarak app.js'den geliyor — destructure yok
+if (typeof window.RM === 'undefined') {
+  document.body.innerHTML = '<p style="padding:40px;color:red;">Hata: app.js yüklenemedi.</p>';
+  throw new Error('RM not defined');
+}
+// RM global olarak app.js'den geliyor
 
 // ── i18n texts ──
 const PT = {
@@ -708,8 +711,6 @@ document.addEventListener('click', (e) => {
 // ── Init ──
 loadSettings();
 loadReports();
-
-}); // DOMContentLoaded sonu
 </script>
 </body>
 </html>
