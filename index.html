@@ -3,94 +3,332 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ReadMeter</title>
+  <title>ODAK-AI — Okuma Dikkatini Ölç, Geleceği Şekillendir</title>
+  <meta name="description" content="ODAK-AI, çocukların kitap okurken gösterdikleri dikkati yapay zeka ile analiz eder. Ebeveynlere anlamlı raporlar sunar.">
   <link rel="stylesheet" href="style.css">
   <style>
-    .home-wrap {
-      min-height: calc(100vh - 56px);
+    /* ── Hero ── */
+    .hero {
+      min-height: calc(100vh - var(--nav-h));
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: 60px 24px;
+      position: relative;
+      overflow: hidden;
     }
 
-    .home-inner {
-      max-width: 520px;
+    .hero-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(79,142,247,.18) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 80% 80%, rgba(167,139,250,.10) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .hero-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(79,142,247,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,142,247,.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+    }
+
+    .hero-inner {
+      max-width: 760px;
       width: 100%;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 14px;
+      background: rgba(79,142,247,.1);
+      border: 1px solid rgba(79,142,247,.25);
+      border-radius: 99px;
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      font-family: var(--font-display);
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.2rem, 6vw, 3.8rem);
+      font-weight: 700;
+      color: var(--text-hi);
+      line-height: 1.15;
+      letter-spacing: -.03em;
+      margin-bottom: 24px;
+    }
+
+    .hero-title .highlight {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: clamp(.95rem, 2vw, 1.125rem);
+      color: var(--text-mid);
+      max-width: 540px;
+      margin: 0 auto 40px;
+      line-height: 1.75;
+    }
+
+    .hero-cta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 56px;
+    }
+
+    /* Brainwave SVG */
+    .brainwave-wrap {
+      position: relative;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .brainwave-card {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-xl);
+      padding: 24px 28px;
+      box-shadow: var(--shadow-card), var(--shadow-glow);
+      overflow: hidden;
+    }
+
+    .bw-label {
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-lo);
+      margin-bottom: 12px;
+      font-family: var(--font-display);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bw-svg { width: 100%; display: block; }
+
+    .bw-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-top: 20px;
+    }
+
+    .bw-stat {
+      background: var(--bg2);
+      padding: 14px 12px;
       text-align: center;
     }
 
-    .home-logo {
-      width: 64px;
-      height: 64px;
-      background: var(--accent);
-      border-radius: var(--radius-lg);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.75rem;
-      margin-bottom: 24px;
-      box-shadow: 0 8px 24px rgba(37,99,235,.25);
+    .bw-stat-val {
+      font-family: var(--font-display);
+      font-size: 1.375rem;
+      font-weight: 700;
+      color: var(--text-hi);
+      line-height: 1;
     }
 
-    .home-title {
-      font-size: 2rem;
+    .bw-stat-lbl {
+      font-size: .7rem;
+      color: var(--text-lo);
+      margin-top: 4px;
+      letter-spacing: .02em;
+    }
+
+    /* ── Features ── */
+    .features {
+      padding: 80px 24px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: .75rem;
       font-weight: 600;
-      color: var(--ink-hi);
-      letter-spacing: -.5px;
-      margin-bottom: 8px;
-    }
-
-    .home-sub {
-      color: var(--ink-lo);
-      font-size: 1rem;
-      margin-bottom: 40px;
-      line-height: 1.7;
-    }
-
-    .home-cards {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    .home-card {
-      display: block;
-      text-decoration: none;
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 28px 20px;
-      transition: all var(--transition);
-      cursor: pointer;
-    }
-
-    .home-card:hover {
-      border-color: var(--accent-mid);
-      box-shadow: var(--shadow-md);
-      transform: translateY(-2px);
-    }
-
-    .home-card-icon {
-      font-size: 2rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-family: var(--font-display);
       margin-bottom: 12px;
     }
 
-    .home-card-title {
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+      font-weight: 700;
+      color: var(--text-hi);
+      letter-spacing: -.02em;
+      margin-bottom: 48px;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      transition: border-color var(--transition), transform var(--transition);
+    }
+
+    .feature-card:hover {
+      border-color: var(--border2);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .feature-icon {
+      width: 44px; height: 44px;
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.25rem;
+      margin-bottom: 16px;
+    }
+
+    .fi-blue   { background: rgba(79,142,247,.15); }
+    .fi-purple { background: rgba(167,139,250,.15); }
+    .fi-green  { background: rgba(52,211,153,.15); }
+
+    .feature-title {
+      font-family: var(--font-display);
+      font-size: 1rem; font-weight: 600;
+      color: var(--text-hi);
+      margin-bottom: 8px;
+    }
+
+    .feature-desc {
+      font-size: .875rem;
+      color: var(--text-lo);
+      line-height: 1.65;
+    }
+
+    /* ── How it works ── */
+    .how {
+      padding: 80px 24px;
+      background: linear-gradient(180deg, transparent, rgba(79,142,247,.04), transparent);
+    }
+
+    .how-inner {
+      max-width: 780px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 24px;
+      margin-top: 48px;
+      position: relative;
+    }
+
+    .step {
+      position: relative;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .step-num {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: .9rem;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .step-title {
+      font-family: var(--font-display);
+      font-size: .9375rem; font-weight: 600;
+      color: var(--text-hi);
+      margin-bottom: 8px;
+    }
+
+    .step-desc { font-size: .8125rem; color: var(--text-lo); line-height: 1.6; }
+
+    /* ── CTA Section ── */
+    .cta-section {
+      padding: 80px 24px 100px;
+      text-align: center;
+    }
+
+    .cta-box {
+      max-width: 560px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-xl);
+      padding: 48px 40px;
+      box-shadow: var(--shadow-card), var(--shadow-glow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-box::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+
+    .cta-title {
+      font-family: var(--font-display);
+      font-size: 1.625rem; font-weight: 700;
+      color: var(--text-hi);
+      letter-spacing: -.02em;
+      margin-bottom: 12px;
+    }
+
+    .cta-sub {
       font-size: .9375rem;
-      font-weight: 600;
-      color: var(--ink-hi);
-      margin-bottom: 4px;
+      color: var(--text-lo);
+      margin-bottom: 32px;
+      line-height: 1.65;
     }
 
-    .home-card-desc {
-      font-size: .8125rem;
-      color: var(--ink-lo);
-      line-height: 1.5;
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px;
+      text-align: center;
+      font-size: .78rem;
+      color: var(--text-xlo);
+      font-family: var(--font-display);
     }
 
-    @media (max-width: 480px) {
-      .home-cards { grid-template-columns: 1fr; }
+    @media (max-width: 640px) {
+      .hero-cta { flex-direction: column; align-items: stretch; }
+      .hero-cta .btn { text-align: center; justify-content: center; }
+      .cta-box { padding: 32px 20px; }
     }
   </style>
 </head>
@@ -98,75 +336,301 @@
 
 <nav class="nav">
   <a class="nav-brand" href="index.html">
-    <div class="logo-mark">RM</div>
-    <span>ReadMeter</span>
+    <div class="nav-logo">OA</div>
+    <span>ODAK-AI</span>
   </a>
   <div class="nav-right">
+    <a href="auth/index.html" class="btn btn-ghost btn-sm" id="nav-login">Giriş Yap</a>
+    <a href="auth/index.html?mode=register" class="btn btn-primary btn-sm" id="nav-register">Ücretsiz Başla</a>
     <div class="lang-toggle">
-      <button class="lang-btn" data-lang="tr">TR</button>
+      <button class="lang-btn active" data-lang="tr">TR</button>
       <button class="lang-btn" data-lang="en">EN</button>
     </div>
   </div>
 </nav>
 
-<div class="home-wrap">
-  <div class="home-inner">
-    <div class="home-logo">📖</div>
-    <h1 class="home-title">ReadMeter</h1>
-    <p class="home-sub" id="home-sub">
-      Okuma verimini ölç. Dikkati takip et. Gelişimi gör.
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span>✦</span>
+      <span id="eyebrow-text">TEKNOFEST 2026 — İnsanlık Yararına Teknolojiler</span>
+    </div>
+
+    <h1 class="hero-title" id="hero-title">
+      Çocuğunuz okurken <span class="highlight">gerçekten odaklanıyor mu?</span>
+    </h1>
+
+    <p class="hero-sub" id="hero-sub">
+      ODAK-AI, sesli okuma ve yapay zeka analizi ile çocuğunuzun okuma dikkatini ölçer.
+      Hangi anlarda odaklandığını, hangi anlarda dağıldığını net olarak gösterir.
     </p>
 
-    <div class="home-cards">
-      <a class="home-card" href="parent/index.html">
-        <div class="home-card-icon">👩‍💼</div>
-        <div class="home-card-title" id="card-parent-title">Ebeveyn Paneli</div>
-        <div class="home-card-desc" id="card-parent-desc">Oturumu ayarla, raporları ve analizleri görüntüle.</div>
+    <div class="hero-cta">
+      <a href="auth/index.html?mode=register" class="btn btn-primary btn-lg" id="cta-start">
+        ✦ Hemen Başla — Ücretsiz
       </a>
-      <a class="home-card" href="child/index.html">
-        <div class="home-card-icon">📚</div>
-        <div class="home-card-title" id="card-child-title">Okuma Ekranı</div>
-        <div class="home-card-desc" id="card-child-desc">Okumaya başla, sesliye katıl, soruları yanıtla.</div>
+      <a href="child/index.html" class="btn btn-ghost btn-lg" id="cta-child">
+        📚 Çocuk Girişi
       </a>
     </div>
-  </div>
-</div>
 
+    <!-- Brainwave visualization -->
+    <div class="brainwave-wrap">
+      <div class="brainwave-card">
+        <div class="bw-label">
+          <div class="pulse-dot"></div>
+          <span id="bw-label-text">Canlı Dikkat Analizi</span>
+        </div>
+        <svg class="bw-svg" viewBox="0 0 460 70" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#4F8EF7" stop-opacity="0.3"/>
+              <stop offset="50%" stop-color="#A78BFA" stop-opacity="0.8"/>
+              <stop offset="100%" stop-color="#4F8EF7" stop-opacity="0.3"/>
+            </linearGradient>
+          </defs>
+          <path id="wave-path" fill="none" stroke="url(#waveGrad)" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <div class="bw-stats">
+          <div class="bw-stat">
+            <div class="bw-stat-val" id="stat-score">—</div>
+            <div class="bw-stat-lbl" id="stat-score-lbl">Odak Skoru</div>
+          </div>
+          <div class="bw-stat">
+            <div class="bw-stat-val" id="stat-segments">—</div>
+            <div class="bw-stat-lbl" id="stat-seg-lbl">Segment</div>
+          </div>
+          <div class="bw-stat">
+            <div class="bw-stat-val" id="stat-questions">—</div>
+            <div class="bw-stat-lbl" id="stat-q-lbl">Soru</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FEATURES ══ -->
+<section class="features">
+  <div class="section-label" id="feat-label">Nasıl Çalışır</div>
+  <h2 class="section-title" id="feat-title">Tek bir uygulama, üç güçlü katman</h2>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon fi-blue">🎙️</div>
+      <h3 class="feature-title" id="f1-title">Sesli Okuma Tespiti</h3>
+      <p class="feature-desc" id="f1-desc">Oturum boyunca rastgele sinyaller verir. Çocuk sesli okur, tarayıcı bu sesi metne dönüştürür. Kurulum gerektirmez.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-purple">🤖</div>
+      <h3 class="feature-title" id="f2-title">Yapay Zeka Analizi</h3>
+      <p class="feature-desc" id="f2-desc">GPT-4o veya Gemini, okunan metinlere dayalı anlama soruları üretir. Cevapları değerlendirerek odak haritası çıkarır.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-green">📊</div>
+      <h3 class="feature-title" id="f3-title">Ebeveyn Raporu</h3>
+      <p class="feature-desc" id="f3-desc">Hangi dakikada dikkat dağıldı, hangi sorularda zorlandı — tüm bunlar ebeveyn panelinde görsel olarak sunulur.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ HOW IT WORKS ══ -->
+<section class="how">
+  <div class="how-inner">
+    <div class="section-label" id="how-label">Adım Adım</div>
+    <h2 class="section-title" id="how-title">4 adımda okuma analizi</h2>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title" id="s1-title">Kayıt Ol</div>
+        <div class="step-desc" id="s1-desc">Google, e-posta veya telefon ile saniyeler içinde hesap oluştur.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title" id="s2-title">Çocuk Ekle</div>
+        <div class="step-desc" id="s2-desc">İsim gir, 6 haneli giriş kodu otomatik oluşturulur. Birden fazla çocuk desteklenir.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title" id="s3-title">Oturum Başlat</div>
+        <div class="step-desc" id="s3-desc">Çocuk kodu ile girer, okumaya başlar. Sesli okuma sinyalleri otomatik gelir.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-title" id="s4-title">Raporu İncele</div>
+        <div class="step-desc" id="s4-desc">Oturum bitince AI raporu hazırlar. Ebeveyn panelinde detaylı analiz görürsün.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA ══ -->
+<section class="cta-section">
+  <div class="cta-box">
+    <h2 class="cta-title" id="cta-title">Bugün başla, farkı gör</h2>
+    <p class="cta-sub" id="cta-sub">Kredi kartı gerekmez. Kurulum yok. Tarayıcın yeterli.</p>
+    <a href="auth/index.html?mode=register" class="btn btn-primary btn-lg w-full" id="cta-btn">
+      ✦ Ücretsiz Hesap Oluştur
+    </a>
+    <p style="margin-top:16px; font-size:.78rem; color:var(--text-xlo);" id="cta-note">
+      Zaten hesabın var mı? <a href="auth/index.html" style="color:var(--accent);" id="cta-login-link">Giriş yap</a>
+    </p>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 ODAK-AI · TEKNOFEST İnsanlık Yararına Teknolojiler Yarışması</p>
+</footer>
+
+<script src="firebase.js" type="module"></script>
 <script src="app.js"></script>
 <script>
-  RM.Lang.init();
+if (typeof window.OdakApp === 'undefined') {
+  window.addEventListener('odak:app:ready', initPage, { once: true });
+} else { initPage(); }
 
-  const homeTexts = {
+function initPage() {
+  const { Lang, Theme } = OdakApp;
+  Theme.init();
+  Lang.init();
+
+  // Brainwave animation
+  animateWave();
+
+  // Demo stats animasyonu
+  animateStat('stat-score', 87, '%');
+  animateStat('stat-segments', 6, '');
+  animateStat('stat-questions', 7, '');
+
+  // i18n
+  const texts = {
     tr: {
-      sub: 'Okuma verimini ölç. Dikkati takip et. Gelişimi gör.',
-      parentTitle: 'Ebeveyn Paneli',
-      parentDesc: 'Oturumu ayarla, raporları ve analizleri görüntüle.',
-      childTitle: 'Okuma Ekranı',
-      childDesc: 'Okumaya başla, sesli okumaya katıl, soruları yanıtla.'
+      eyebrow: 'TEKNOFEST 2026 — İnsanlık Yararına Teknolojiler',
+      heroTitle: 'Çocuğunuz okurken <span class="highlight">gerçekten odaklanıyor mu?</span>',
+      heroSub: 'ODAK-AI, sesli okuma ve yapay zeka analizi ile çocuğunuzun okuma dikkatini ölçer. Hangi anlarda odaklandığını, hangi anlarda dağıldığını net olarak gösterir.',
+      ctaStart: '✦ Hemen Başla — Ücretsiz',
+      ctaChild: '📚 Çocuk Girişi',
+      bwLabel: 'Canlı Dikkat Analizi',
+      statScoreLbl: 'Odak Skoru', statSegLbl: 'Segment', statQLbl: 'Soru',
+      featLabel: 'Nasıl Çalışır', featTitle: 'Tek bir uygulama, üç güçlü katman',
+      f1t: 'Sesli Okuma Tespiti', f1d: 'Oturum boyunca rastgele sinyaller verir. Çocuk sesli okur, tarayıcı bu sesi metne dönüştürür.',
+      f2t: 'Yapay Zeka Analizi', f2d: 'GPT-4o veya Gemini, okunan metinlere dayalı anlama soruları üretir ve odak haritası çıkarır.',
+      f3t: 'Ebeveyn Raporu', f3d: 'Hangi dakikada dikkat dağıldı, hangi sorularda zorlandı — tüm bunlar görsel olarak sunulur.',
+      howLabel: 'Adım Adım', howTitle: '4 adımda okuma analizi',
+      s1t: 'Kayıt Ol', s1d: 'Google, e-posta veya telefon ile saniyeler içinde hesap oluştur.',
+      s2t: 'Çocuk Ekle', s2d: 'İsim gir, 6 haneli giriş kodu otomatik oluşturulur.',
+      s3t: 'Oturum Başlat', s3d: 'Çocuk kodu ile girer, sesli okuma sinyalleri otomatik gelir.',
+      s4t: 'Raporu İncele', s4d: 'AI raporu hazırlar, ebeveyn panelinde detaylı analiz görürsün.',
+      ctaTitle: 'Bugün başla, farkı gör',
+      ctaSub: 'Kredi kartı gerekmez. Kurulum yok. Tarayıcın yeterli.',
+      ctaBtn: '✦ Ücretsiz Hesap Oluştur',
+      ctaNote: 'Zaten hesabın var mı?', ctaLoginLink: 'Giriş yap',
+      navLogin: 'Giriş Yap', navRegister: 'Ücretsiz Başla',
     },
     en: {
-      sub: 'Measure reading efficiency. Track attention. See progress.',
-      parentTitle: 'Parent Panel',
-      parentDesc: 'Set session duration, view reports and attention analysis.',
-      childTitle: 'Reading Screen',
-      childDesc: 'Start reading, read aloud on cue, answer comprehension questions.'
+      eyebrow: 'TEKNOFEST 2026 — Technologies for Humanity',
+      heroTitle: 'Is your child truly <span class="highlight">focused while reading?</span>',
+      heroSub: 'ODAK-AI uses read-aloud detection and AI analysis to measure your child\'s reading attention — showing exactly when they focus and when they drift.',
+      ctaStart: '✦ Get Started — Free',
+      ctaChild: '📚 Child Login',
+      bwLabel: 'Live Attention Analysis',
+      statScoreLbl: 'Focus Score', statSegLbl: 'Segments', statQLbl: 'Questions',
+      featLabel: 'How It Works', featTitle: 'One app, three powerful layers',
+      f1t: 'Read-Aloud Detection', f1d: 'Random signals prompt the child to read aloud. The browser converts speech to text automatically.',
+      f2t: 'AI Analysis', f2d: 'GPT-4o or Gemini generates comprehension questions and produces an attention map.',
+      f3t: 'Parent Report', f3d: 'Which minute attention dropped, which questions were hard — all visualised in the parent panel.',
+      howLabel: 'Step by Step', howTitle: 'Reading analysis in 4 steps',
+      s1t: 'Sign Up', s1d: 'Create an account in seconds with Google, email, or phone.',
+      s2t: 'Add Child', s2d: 'Enter a name; a 6-digit login code is generated automatically.',
+      s3t: 'Start Session', s3d: 'Child logs in with the code; read-aloud signals come automatically.',
+      s4t: 'View Report', s4d: 'AI prepares the report; detailed analysis appears in the parent panel.',
+      ctaTitle: 'Start today, see the difference',
+      ctaSub: 'No credit card. No install. Just your browser.',
+      ctaBtn: '✦ Create Free Account',
+      ctaNote: 'Already have an account?', ctaLoginLink: 'Sign in',
+      navLogin: 'Log In', navRegister: 'Get Started Free',
     }
   };
 
-  function applyHome() {
-    const lang = RM.Lang.get();
-    const t = homeTexts[lang];
-    document.getElementById('home-sub').textContent = t.sub;
-    document.getElementById('card-parent-title').textContent = t.parentTitle;
-    document.getElementById('card-parent-desc').textContent = t.parentDesc;
-    document.getElementById('card-child-title').textContent = t.childTitle;
-    document.getElementById('card-child-desc').textContent = t.childDesc;
+  function applyTexts() {
+    const l = Lang.get();
+    const T = texts[l];
+    document.getElementById('eyebrow-text').textContent = T.eyebrow;
+    document.getElementById('hero-title').innerHTML = T.heroTitle;
+    document.getElementById('hero-sub').textContent = T.heroSub;
+    document.getElementById('cta-start').textContent = T.ctaStart;
+    document.getElementById('cta-child').textContent = T.ctaChild;
+    document.getElementById('bw-label-text').textContent = T.bwLabel;
+    document.getElementById('stat-score-lbl').textContent = T.statScoreLbl;
+    document.getElementById('stat-seg-lbl').textContent = T.statSegLbl;
+    document.getElementById('stat-q-lbl').textContent = T.statQLbl;
+    document.getElementById('feat-label').textContent = T.featLabel;
+    document.getElementById('feat-title').textContent = T.featTitle;
+    document.getElementById('f1-title').textContent = T.f1t;
+    document.getElementById('f1-desc').textContent = T.f1d;
+    document.getElementById('f2-title').textContent = T.f2t;
+    document.getElementById('f2-desc').textContent = T.f2d;
+    document.getElementById('f3-title').textContent = T.f3t;
+    document.getElementById('f3-desc').textContent = T.f3d;
+    document.getElementById('how-label').textContent = T.howLabel;
+    document.getElementById('how-title').textContent = T.howTitle;
+    document.getElementById('s1-title').textContent = T.s1t;
+    document.getElementById('s1-desc').textContent = T.s1d;
+    document.getElementById('s2-title').textContent = T.s2t;
+    document.getElementById('s2-desc').textContent = T.s2d;
+    document.getElementById('s3-title').textContent = T.s3t;
+    document.getElementById('s3-desc').textContent = T.s3d;
+    document.getElementById('s4-title').textContent = T.s4t;
+    document.getElementById('s4-desc').textContent = T.s4d;
+    document.getElementById('cta-title').textContent = T.ctaTitle;
+    document.getElementById('cta-sub').textContent = T.ctaSub;
+    document.getElementById('cta-btn').textContent = T.ctaBtn;
+    document.getElementById('cta-note').innerHTML = T.ctaNote + ' <a href="auth/index.html" style="color:var(--accent);">' + T.ctaLoginLink + '</a>';
+    document.getElementById('nav-login').textContent = T.navLogin;
+    document.getElementById('nav-register').textContent = T.navRegister;
   }
 
-  applyHome();
-  document.querySelectorAll('.lang-btn').forEach(b => {
-    b.addEventListener('click', () => { applyHome(); });
-  });
+  applyTexts();
+  window.addEventListener('odak:lang:change', applyTexts);
+}
+
+// Brainwave animasyonu
+function animateWave() {
+  const path = document.getElementById('wave-path');
+  if (!path) return;
+  let t = 0;
+  function frame() {
+    t += 0.022;
+    const pts = [];
+    for (let x = 0; x <= 460; x += 6) {
+      const y = 35
+        + Math.sin(x * 0.045 + t) * 14
+        + Math.sin(x * 0.012 + t * 1.3) * 8
+        + Math.sin(x * 0.085 + t * .7) * 5;
+      pts.push(x === 0 ? `M${x},${y}` : `L${x},${y}`);
+    }
+    path.setAttribute('d', pts.join(' '));
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+function animateStat(id, target, suffix) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  let current = 0;
+  const step = target / 40;
+  const interval = setInterval(() => {
+    current = Math.min(current + step, target);
+    el.textContent = Math.round(current) + suffix;
+    if (current >= target) clearInterval(interval);
+  }, 35);
+}
 </script>
 </body>
 </html>
