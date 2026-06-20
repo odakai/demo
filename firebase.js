@@ -1,224 +1,240 @@
-/* ─── ODAK-AI · Firebase Module ─── */
+/* ─── ODAK-AI · Firebase Module (REST API) ─── */
 (function () {
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAa45zU_aIbhdbeDxLhyozDn8vdHy8eaxs",
-    authDomain: "odak-ai-6ab3e.firebaseapp.com",
-    projectId: "odak-ai-6ab3e",
-    storageBucket: "odak-ai-6ab3e.firebasestorage.app",
-    messagingSenderId: "344460023439",
-    appId: "1:344460023439:web:b77a83bb56d0be0b4342fa"
+const CONFIG = {
+  apiKey:    "AIzaSyAa45zU_aIbhdbeDxLhyozDn8vdHy8eaxs",
+  authDomain:"odak-ai-6ab3e.firebaseapp.com",
+  projectId: "odak-ai-6ab3e",
+  appId:     "1:344460023439:web:b77a83bb56d0be0b4342fa"
+};
+
+const FB_VER  = "10.12.2";
+const FB_BASE = `https://www.gstatic.com/firebasejs/${FB_VER}`;
+const FS_URL  = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents`;
+
+// ── Firestore REST helpers ──
+// Firestore REST formatına çevir
+function toFS(val) {
+  if (val === null || val === undefined) return { nullValue: null };
+  if (typeof val === 'boolean') return { booleanValue: val };
+  if (typeof val === 'number')  return Number.isInteger(val) ? { integerValue: String(val) } : { doubleValue: val };
+  if (typeof val === 'string')  return { stringValue: val };
+  if (Array.isArray(val))       return { arrayValue: { values: val.map(toFS) } };
+  if (typeof val === 'object')  return { mapValue: { fields: objToFS(val) } };
+  return { stringValue: String(val) };
+}
+
+function objToFS(obj) {
+  const fields = {};
+  for (const k in obj) fields[k] = toFS(obj[k]);
+  return fields;
+}
+
+// Firestore REST formatından JS'e çevir
+function fromFS(val) {
+  if (!val) return null;
+  if ('nullValue'    in val) return null;
+  if ('booleanValue' in val) return val.booleanValue;
+  if ('integerValue' in val) return parseInt(val.integerValue);
+  if ('doubleValue'  in val) return val.doubleValue;
+  if ('stringValue'  in val) return val.stringValue;
+  if ('arrayValue'   in val) return (val.arrayValue.values || []).map(fromFS);
+  if ('mapValue'     in val) return fromFSFields(val.mapValue.fields || {});
+  return null;
+}
+
+function fromFSFields(fields) {
+  const obj = {};
+  for (const k in fields) obj[k] = fromFS(fields[k]);
+  return obj;
+}
+
+// REST GET
+async function fsGet(path, token) {
+  const res = await fetch(`${FS_URL}/${path}`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`Firestore GET ${res.status}: ${await res.text()}`);
+  const doc = await res.json();
+  return doc.fields ? fromFSFields(doc.fields) : null;
+}
+
+// REST SET (create or overwrite)
+async function fsSet(path, data, token) {
+  const fields = objToFS(data);
+  const res = await fetch(`${FS_URL}/${path}`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ fields })
+  });
+  if (!res.ok) throw new Error(`Firestore SET ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+// REST UPDATE (merge — sadece belirtilen alanları güncelle)
+async function fsUpdate(path, data, token) {
+  const fields   = objToFS(data);
+  const fieldMask = Object.keys(fields).join(',');
+  const res = await fetch(`${FS_URL}/${path}?updateMask.fieldPaths=${encodeURIComponent(fieldMask)}`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ fields })
+  });
+  if (!res.ok) throw new Error(`Firestore UPDATE ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+// ── Firebase Auth (sadece SDK Auth kullanıyoruz, Firestore REST) ──
+async function loadFirebase() {
+  const { initializeApp } = await import(`${FB_BASE}/firebase-app.js`);
+  const {
+    getAuth, signInWithPopup, GoogleAuthProvider,
+    createUserWithEmailAndPassword, signInWithEmailAndPassword,
+    signOut, onAuthStateChanged, setPersistence,
+    browserLocalPersistence, RecaptchaVerifier, signInWithPhoneNumber,
+    getIdToken
+  } = await import(`${FB_BASE}/firebase-auth.js`);
+
+  const app  = initializeApp(CONFIG);
+  const auth = getAuth(app);
+  await setPersistence(auth, browserLocalPersistence);
+
+  // Her istek için güncel token al
+  async function getToken() {
+    const user = auth.currentUser;
+    if (!user) throw new Error('Giriş yapılmamış');
+    return getIdToken(user, false);
+  }
+
+  // Varsayılan parent dokümanı
+  function defaultParent(user, extra) {
+    return {
+      uid:         user.uid,
+      email:       user.email || '',
+      displayName: user.displayName || '',
+      children:    [],
+      settings:    { sessionDuration: 20, aiProvider: 'openai', apiKey: '' },
+      sessions:    [],
+      createdAt:   new Date().toISOString(),
+      ...(extra || {})
+    };
+  }
+
+  async function ensureUserDoc(user, displayName) {
+    const token   = await getToken();
+    const existing = await fsGet(`parents/${user.uid}`, token);
+    if (!existing) {
+      await fsSet(`parents/${user.uid}`, defaultParent(user, { displayName: displayName || user.displayName || '' }), token);
+    }
+  }
+
+  // ── Auth ──
+  const Auth = {
+    async loginWithGoogle() {
+      const result = await signInWithPopup(auth, new GoogleAuthProvider());
+      await ensureUserDoc(result.user);
+      return result.user;
+    },
+    async loginWithEmail(email, password) {
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      await ensureUserDoc(result.user);
+      return result.user;
+    },
+    async registerWithEmail(email, password, displayName) {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      await ensureUserDoc(result.user, displayName);
+      return result.user;
+    },
+    async logout() { await signOut(auth); },
+    onAuthChange(cb) { onAuthStateChanged(auth, cb); },
+    currentUser()   { return auth.currentUser; },
+    setupRecaptcha(elementId) {
+      return new RecaptchaVerifier(auth, elementId, { size: 'invisible' });
+    },
+    async sendPhoneOTP(phone, recaptcha) {
+      return signInWithPhoneNumber(auth, phone, recaptcha);
+    }
   };
 
-  const FB_VER  = "10.12.2";
-  const FB_BASE = `https://www.gstatic.com/firebasejs/${FB_VER}`;
-
-  // Firestore offline hatasını handle eden wrapper
-  async function withRetry(fn, retries = 3) {
-    for (let i = 0; i < retries; i++) {
-      try {
-        return await fn();
-      } catch (e) {
-        const isOffline = e.message && (
-          e.message.includes('offline') ||
-          e.message.includes('client is offline') ||
-          e.code === 'unavailable'
-        );
-        if (isOffline && i < retries - 1) {
-          await new Promise(r => setTimeout(r, 1500 * (i + 1)));
-          continue;
-        }
-        throw e;
+  // ── DB ──
+  const DB = {
+    async getParent(uid) {
+      const token = await getToken();
+      const data  = await fsGet(`parents/${uid}`, token);
+      if (!data) {
+        // Yoksa oluştur
+        const fresh = defaultParent(auth.currentUser || { uid, email: '', displayName: '' });
+        await fsSet(`parents/${uid}`, fresh, token);
+        return fresh;
       }
+      if (!Array.isArray(data.children)) data.children = [];
+      if (!Array.isArray(data.sessions)) data.sessions = [];
+      if (!data.settings) data.settings = { sessionDuration: 20, aiProvider: 'openai', apiKey: '' };
+      return data;
+    },
+
+    async updateParent(uid, data) {
+      const token   = await getToken();
+      const existing = await fsGet(`parents/${uid}`, token);
+      if (!existing) {
+        // Yoksa set
+        const fresh = { ...defaultParent(auth.currentUser || { uid, email:'', displayName:'' }), ...data };
+        await fsSet(`parents/${uid}`, fresh, token);
+      } else {
+        await fsUpdate(`parents/${uid}`, data, token);
+      }
+    },
+
+    async addChild(uid, child) {
+      const token  = await getToken();
+      const parent = await DB.getParent(uid);
+      const updated = [...(parent.children || []), child];
+      await fsUpdate(`parents/${uid}`, { children: updated }, token);
+      return updated;
+    },
+
+    async registerChildCode(code, parentUid, childId, childName) {
+      const token = await getToken();
+      await fsSet(`childCodes/${code}`, {
+        parentUid, childId, childName,
+        createdAt: new Date().toISOString()
+      }, token);
+    },
+
+    async getParentByChildCode(code) {
+      const token    = await getToken();
+      const codeData = await fsGet(`childCodes/${code}`, token);
+      if (!codeData) return null;
+      const { parentUid, childId, childName } = codeData;
+      const parentData = await DB.getParent(parentUid);
+      return { parentUid, childId, childName, parentData };
+    },
+
+    async saveChildSession(code, session) {
+      const token  = await getToken();
+      const info   = await DB.getParentByChildCode(code);
+      if (!info) throw new Error('Geçersiz kod');
+      const parent   = await DB.getParent(info.parentUid);
+      const sessions = [...(parent.sessions || []), {
+        ...session,
+        childId:   info.childId,
+        childName: info.childName
+      }];
+      await fsUpdate(`parents/${info.parentUid}`, { sessions }, token);
     }
-  }
+  };
 
-  async function loadFirebase() {
-    const { initializeApp }     = await import(`${FB_BASE}/firebase-app.js`);
-    const {
-      getAuth, signInWithPopup, GoogleAuthProvider,
-      createUserWithEmailAndPassword, signInWithEmailAndPassword,
-      signOut, onAuthStateChanged, setPersistence,
-      browserLocalPersistence, RecaptchaVerifier, signInWithPhoneNumber,
-    } = await import(`${FB_BASE}/firebase-auth.js`);
+  window.OdakFirebase = { Auth, DB };
+  window.dispatchEvent(new Event('odak:firebase:ready'));
+}
 
-    const {
-      getFirestore, enableNetwork, doc, setDoc, getDoc,
-      updateDoc, arrayUnion, collection, getDocs,
-    } = await import(`${FB_BASE}/firebase-firestore.js`);
-
-    const app  = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db   = getFirestore(app);
-
-    // Kalıcı oturum
-    await setPersistence(auth, browserLocalPersistence);
-
-    // Network yeniden bağlan (offline hatasından sonra)
-    async function ensureOnline() {
-      try { await enableNetwork(db); } catch(e) { /* zaten online */ }
-    }
-
-    // ── Auth helpers ──
-    const Auth = {
-      async loginWithGoogle() {
-        const provider = new GoogleAuthProvider();
-        const result   = await signInWithPopup(auth, provider);
-        await ensureOnline();
-        await ensureUserDoc(result.user);
-        return result.user;
-      },
-
-      async loginWithEmail(email, password) {
-        const result = await signInWithEmailAndPassword(auth, email, password);
-        await ensureOnline();
-        await ensureUserDoc(result.user);
-        return result.user;
-      },
-
-      async registerWithEmail(email, password, displayName) {
-        const result = await createUserWithEmailAndPassword(auth, email, password);
-        await ensureOnline();
-        await ensureUserDoc(result.user, displayName);
-        return result.user;
-      },
-
-      async logout() { await signOut(auth); },
-
-      onAuthChange(cb) { onAuthStateChanged(auth, cb); },
-
-      currentUser() { return auth.currentUser; },
-
-      setupRecaptcha(elementId) {
-        return new RecaptchaVerifier(auth, elementId, { size: 'invisible' });
-      },
-
-      async sendPhoneOTP(phone, recaptcha) {
-        return signInWithPhoneNumber(auth, phone, recaptcha);
-      }
-    };
-
-    // ── Firestore helpers ──
-    async function ensureUserDoc(user, displayName) {
-      const ref  = doc(db, 'parents', user.uid);
-      const snap = await withRetry(() => getDoc(ref));
-      if (!snap.exists()) {
-        await withRetry(() => setDoc(ref, {
-          uid:         user.uid,
-          email:       user.email || '',
-          displayName: displayName || user.displayName || '',
-          children:    [],
-          settings:    { sessionDuration: 20, aiProvider: 'openai', apiKey: '' },
-          sessions:    [],
-          createdAt:   new Date().toISOString()
-        }));
-      }
-    }
-
-    const DB = {
-      async getParent(uid) {
-        await ensureOnline();
-        const ref  = doc(db, 'parents', uid);
-        const snap = await withRetry(() => getDoc(ref));
-        if (!snap.exists()) {
-          // Doküman yoksa oluştur
-          const fresh = {
-            uid,
-            email:       auth.currentUser?.email || '',
-            displayName: auth.currentUser?.displayName || '',
-            children:    [],
-            settings:    { sessionDuration: 20, aiProvider: 'openai', apiKey: '' },
-            sessions:    [],
-            createdAt:   new Date().toISOString()
-          };
-          await withRetry(() => setDoc(ref, fresh));
-          return fresh;
-        }
-        const data = snap.data();
-        // Eksik alanları garantiye al
-        if (!Array.isArray(data.children)) data.children = [];
-        if (!Array.isArray(data.sessions)) data.sessions = [];
-        if (!data.settings) data.settings = { sessionDuration: 20, aiProvider: 'openai', apiKey: '' };
-        return data;
-      },
-
-      async updateParent(uid, data) {
-        await ensureOnline();
-        const ref  = doc(db, 'parents', uid);
-        const snap = await withRetry(() => getDoc(ref));
-        if (!snap.exists()) {
-          // Doküman yoksa setDoc ile oluştur
-          await withRetry(() => setDoc(ref, {
-            uid,
-            email:       auth.currentUser?.email || '',
-            displayName: auth.currentUser?.displayName || '',
-            children:    [],
-            settings:    { sessionDuration: 20, aiProvider: 'openai', apiKey: '' },
-            sessions:    [],
-            createdAt:   new Date().toISOString(),
-            ...data
-          }));
-        } else {
-          await withRetry(() => updateDoc(ref, data));
-        }
-      },
-
-      async addChild(uid, child) {
-        await ensureOnline();
-        const ref  = doc(db, 'parents', uid);
-        const snap = await withRetry(() => getDoc(ref));
-        const existing = snap.exists() ? (snap.data().children || []) : [];
-        const updated  = [...existing, child];
-        if (!snap.exists()) {
-          await withRetry(() => setDoc(ref, {
-            uid, children: updated, sessions: [], settings: {},
-            createdAt: new Date().toISOString()
-          }));
-        } else {
-          await withRetry(() => updateDoc(ref, { children: updated }));
-        }
-        return updated;
-      },
-
-      async registerChildCode(code, parentUid, childId, childName) {
-        await ensureOnline();
-        await withRetry(() => setDoc(doc(db, 'childCodes', code), {
-          parentUid, childId, childName,
-          createdAt: new Date().toISOString()
-        }));
-      },
-
-      async getParentByChildCode(code) {
-        await ensureOnline();
-        const codeSnap = await withRetry(() => getDoc(doc(db, 'childCodes', code)));
-        if (!codeSnap.exists()) return null;
-        const { parentUid, childId, childName } = codeSnap.data();
-        const parentData = await DB.getParent(parentUid);
-        return { parentUid, childId, childName, parentData };
-      },
-
-      async saveChildSession(code, session) {
-        await ensureOnline();
-        const info = await DB.getParentByChildCode(code);
-        if (!info) throw new Error('Geçersiz kod');
-        const ref      = doc(db, 'parents', info.parentUid);
-        const snap     = await withRetry(() => getDoc(ref));
-        const sessions = snap.exists() ? (snap.data().sessions || []) : [];
-        sessions.push({ ...session, childId: info.childId, childName: info.childName });
-        if (!snap.exists()) {
-          await withRetry(() => setDoc(ref, { sessions }));
-        } else {
-          await withRetry(() => updateDoc(ref, { sessions }));
-        }
-      }
-    };
-
-    window.OdakFirebase = { Auth, DB };
-    window.dispatchEvent(new Event('odak:firebase:ready'));
-  }
-
-  loadFirebase().catch(e => {
-    console.error('Firebase yüklenemedi:', e);
-  });
+loadFirebase().catch(e => console.error('Firebase yüklenemedi:', e));
 
 })();
