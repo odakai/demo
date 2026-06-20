@@ -70,7 +70,8 @@ const Lang = (function () {
       b.addEventListener('click', () => {
         set(b.dataset.lang);
         document.documentElement.lang = b.dataset.lang;
-        window.dispatchEvent(new Event('odak:lang:change'));
+        // Sadece bu sayfadaki dinleyicileri tetikle
+        window.dispatchEvent(new CustomEvent('odak:lang:change', { detail: b.dataset.lang }));
       });
     });
   }
