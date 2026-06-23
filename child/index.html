@@ -7,266 +7,139 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%234F8EF7'/><text y='22' x='7' font-size='18' fill='white'>📖</text></svg>">
   <link rel="stylesheet" href="../style.css">
   <style>
-    /* ── Phases ── */
-    .phase { display: none; min-height: calc(100vh - var(--nav-h)); }
-    .phase.active { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; }
+    .phase { display:none; min-height:calc(100vh - var(--nav-h)); }
+    .phase.active { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; }
 
-    /* ── Code Login ── */
+    /* Code login */
     .code-card {
-      background: var(--surface);
-      border: 1px solid var(--border2);
-      border-radius: var(--radius-xl);
-      padding: 40px;
-      width: min(380px, 100%);
-      text-align: center;
-      box-shadow: var(--shadow-card), var(--shadow-glow);
+      background:var(--surface); border:1px solid var(--border2);
+      border-radius:var(--radius-xl); padding:40px;
+      width:min(380px,100%); text-align:center;
+      box-shadow:var(--shadow-card),var(--shadow-glow);
     }
-
-    .code-icon { font-size: 3rem; margin-bottom: 16px; }
-
-    .code-title {
-      font-family: var(--font-display);
-      font-size: 1.375rem; font-weight: 700;
-      color: var(--text-hi);
-      letter-spacing: -.02em;
-      margin-bottom: 6px;
-    }
-
-    .code-sub { font-size: .875rem; color: var(--text-lo); margin-bottom: 28px; }
-
-    .code-inputs {
-      display: flex; gap: 8px; justify-content: center; margin-bottom: 20px;
-    }
-
+    .code-icon { font-size:3rem; margin-bottom:16px; }
+    .code-title { font-family:var(--font-display); font-size:1.375rem; font-weight:700; color:var(--text-hi); letter-spacing:-.02em; margin-bottom:6px; }
+    .code-sub { font-size:.875rem; color:var(--text-lo); margin-bottom:28px; }
+    .code-inputs { display:flex; gap:8px; justify-content:center; margin-bottom:20px; }
     .code-digit {
-      width: 44px; height: 54px;
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      color: var(--text-hi);
-      font-family: var(--font-display);
-      font-size: 1.375rem; font-weight: 700;
-      text-align: center;
-      outline: none;
-      text-transform: uppercase;
-      transition: border-color var(--transition), box-shadow var(--transition);
+      width:44px; height:54px; background:var(--bg2); border:1px solid var(--border);
+      border-radius:var(--radius-md); color:var(--text-hi);
+      font-family:var(--font-display); font-size:1.375rem; font-weight:700;
+      text-align:center; outline:none; text-transform:uppercase;
+      transition:border-color var(--transition),box-shadow var(--transition);
     }
+    .code-digit:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+    .code-error { font-size:.8125rem; color:var(--danger); margin-bottom:12px; min-height:20px; }
 
-    .code-digit:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-glow);
-    }
-
-    .code-error {
-      font-size: .8125rem; color: var(--danger);
-      margin-bottom: 12px; min-height: 20px;
-    }
-
-    /* ── Start ── */
+    /* Start */
     .start-card {
-      background: var(--surface);
-      border: 1px solid var(--border2);
-      border-radius: var(--radius-xl);
-      padding: 36px;
-      width: min(400px, 100%);
-      text-align: center;
-      box-shadow: var(--shadow-card), var(--shadow-glow);
+      background:var(--surface); border:1px solid var(--border2);
+      border-radius:var(--radius-xl); padding:36px;
+      width:min(400px,100%); text-align:center;
+      box-shadow:var(--shadow-card),var(--shadow-glow);
     }
-
     .welcome-avatar {
-      width: 72px; height: 72px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      display: flex; align-items: center; justify-content: center;
-      font-size: 2rem;
-      margin: 0 auto 16px;
-      box-shadow: 0 0 24px var(--accent-glow);
+      width:72px; height:72px; border-radius:50%;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      display:flex; align-items:center; justify-content:center;
+      font-family:var(--font-display); font-size:1.75rem; font-weight:700; color:white;
+      margin:0 auto 16px; box-shadow:0 0 24px var(--accent-glow);
     }
-
-    .welcome-name {
-      font-family: var(--font-display);
-      font-size: 1.375rem; font-weight: 700;
-      color: var(--text-hi); margin-bottom: 6px;
-    }
-
+    .welcome-name { font-family:var(--font-display); font-size:1.375rem; font-weight:700; color:var(--text-hi); margin-bottom:6px; }
     .session-pill {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 6px 14px;
-      background: rgba(79,142,247,.1);
-      border: 1px solid rgba(79,142,247,.25);
-      border-radius: 99px;
-      font-size: .8125rem; color: var(--accent);
-      font-family: var(--font-display); font-weight: 600;
-      margin: 12px 0 24px;
+      display:inline-flex; align-items:center; gap:6px;
+      padding:6px 14px; background:rgba(79,142,247,.1);
+      border:1px solid rgba(79,142,247,.25); border-radius:99px;
+      font-size:.8125rem; color:var(--accent);
+      font-family:var(--font-display); font-weight:600; margin:12px 0 24px;
+    }
+    .safari-warn {
+      background:var(--warn-bg); border:1px solid rgba(251,191,36,.3);
+      border-radius:var(--radius-md); padding:10px 14px;
+      font-size:.8125rem; color:var(--warn); margin-bottom:16px; display:none;
     }
 
-    /* ── Reading ── */
-    #phase-reading {
-      justify-content: flex-start;
-      align-items: stretch;
-      padding: 0;
-    }
+    /* Reading */
+    #phase-reading { justify-content:flex-start; align-items:stretch; padding:0; }
+    .reading-layout { display:flex; flex-direction:column; width:100%; height:calc(100vh - var(--nav-h)); }
 
-    .reading-layout {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      height: calc(100vh - var(--nav-h));
-    }
-
-    /* Read aloud banner */
     .ral-banner {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: white;
-      text-align: center;
-      padding: 14px 24px;
-      font-family: var(--font-display);
-      font-size: 1rem; font-weight: 600;
-      display: flex; align-items: center; justify-content: center; gap: 12px;
-      transform: translateY(-100%);
-      transition: transform .3s cubic-bezier(.4,0,.2,1);
-      position: relative; z-index: 10;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      color:white; text-align:center; padding:14px 24px;
+      font-family:var(--font-display); font-size:1rem; font-weight:600;
+      display:flex; align-items:center; justify-content:center; gap:12px;
+      transform:translateY(-100%); transition:transform .3s cubic-bezier(.4,0,.2,1);
+      position:relative; z-index:10;
     }
+    .ral-banner.show { transform:translateY(0); }
+    .ral-banner.listening { background:linear-gradient(135deg,var(--success),#059669); }
 
-    .ral-banner.show { transform: translateY(0); }
-    .ral-banner.listening { background: linear-gradient(135deg, var(--success), #059669); }
-
-    /* Timer bar */
     .timer-bar {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 24px;
-      background: var(--bg2);
-      border-bottom: 1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 24px; background:var(--bg2); border-bottom:1px solid var(--border);
     }
+    .timer-clock { font-family:var(--font-display); font-size:1.125rem; font-weight:700; color:var(--text-hi); }
+    .timer-progress { width:140px; height:5px; background:var(--border); border-radius:99px; overflow:hidden; }
+    .timer-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:99px; transition:width 1s linear; }
 
-    .timer-info {
-      display: flex; align-items: center; gap: 16px;
-    }
-
-    .timer-clock {
-      font-family: var(--font-display);
-      font-size: 1.125rem; font-weight: 700;
-      color: var(--text-hi);
-    }
-
-    .timer-progress {
-      width: 140px; height: 5px;
-      background: var(--border);
-      border-radius: 99px; overflow: hidden;
-    }
-
-    .timer-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      border-radius: 99px;
-      transition: width 1s linear;
-    }
-
-    .reading-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 24px;
-      overflow-y: auto;
-    }
-
+    .reading-content { flex:1; display:flex; flex-direction:column; align-items:center; padding:24px; overflow-y:auto; }
     .reading-box {
-      max-width: 680px; width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 32px;
-      font-size: 1.0625rem;
-      line-height: 1.9;
-      color: var(--text-hi);
-      font-family: Georgia, 'Times New Roman', serif;
-      min-height: 50vh;
-      flex: 1;
+      max-width:680px; width:100%; background:var(--surface);
+      border:1px solid var(--border); border-radius:var(--radius-lg); padding:32px;
+      font-size:1.0625rem; line-height:1.9; color:var(--text-hi);
+      font-family:Georgia,'Times New Roman',serif; min-height:50vh; flex:1;
     }
+    .reading-hint { max-width:680px; width:100%; text-align:center; font-size:.8125rem; color:var(--text-xlo); margin-top:12px; }
 
-    .reading-hint {
-      max-width: 680px; width: 100%;
-      text-align: center;
-      font-size: .8125rem; color: var(--text-xlo);
-      margin-top: 12px;
+    /* Wpm live display */
+    .wpm-live {
+      position:fixed; bottom:24px; right:24px;
+      background:var(--surface); border:1px solid var(--border2);
+      border-radius:var(--radius-lg); padding:12px 16px; text-align:center;
+      box-shadow:var(--shadow-md); display:none; z-index:50;
     }
+    .wpm-val { font-family:var(--font-display); font-size:1.5rem; font-weight:700; color:var(--accent); }
+    .wpm-lbl { font-size:.68rem; color:var(--text-lo); }
 
-    /* ── Questions ── */
-    #phase-questions { justify-content: flex-start; align-items: stretch; padding: 0; }
-
-    .questions-layout {
-      width: 100%; max-width: 600px;
-      margin: 0 auto;
-      padding: 32px 24px;
-    }
-
-    .q-counter {
-      font-size: .78rem; font-weight: 600; letter-spacing: .06em;
-      text-transform: uppercase; color: var(--accent);
-      font-family: var(--font-display); margin-bottom: 8px;
-    }
-
-    .q-progress { height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; margin-bottom: 28px; }
-    .q-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; transition: width .4s ease; }
-
-    .question-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 26px;
-      margin-bottom: 16px;
-    }
-
-    .question-text {
-      font-size: 1rem; font-weight: 500; color: var(--text-hi);
-      line-height: 1.65; margin-bottom: 16px;
-    }
-
+    /* Questions */
+    #phase-questions { justify-content:flex-start; align-items:stretch; padding:0; }
+    .questions-layout { width:100%; max-width:600px; margin:0 auto; padding:32px 24px; }
+    .q-counter { font-size:.78rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); font-family:var(--font-display); margin-bottom:8px; }
+    .q-progress { height:4px; background:var(--border); border-radius:99px; overflow:hidden; margin-bottom:28px; }
+    .q-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:99px; transition:width .4s ease; }
+    .question-box { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:26px; margin-bottom:16px; }
+    .question-text { font-size:1rem; font-weight:500; color:var(--text-hi); line-height:1.65; margin-bottom:16px; }
+    .difficulty-badge { display:inline-block; margin-bottom:10px; }
     .answer-textarea {
-      width: 100%; min-height: 96px;
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      color: var(--text-hi);
-      font-size: .9375rem; line-height: 1.6;
-      padding: 12px;
-      resize: vertical; outline: none;
-      transition: border-color var(--transition), box-shadow var(--transition);
+      width:100%; min-height:96px; background:var(--bg2);
+      border:1px solid var(--border); border-radius:var(--radius-md);
+      color:var(--text-hi); font-size:.9375rem; line-height:1.6;
+      padding:12px; resize:vertical; outline:none;
+      transition:border-color var(--transition),box-shadow var(--transition);
     }
+    .answer-textarea:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+    .answer-textarea::placeholder { color:var(--text-xlo); }
 
-    .answer-textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-glow);
-    }
+    /* Loading */
+    #phase-loading { text-align:center; }
+    .loading-msg { font-size:1rem; color:var(--text-mid); margin-top:20px; }
 
-    .answer-textarea::placeholder { color: var(--text-xlo); }
+    /* Done */
+    #phase-done { text-align:center; }
+    .done-icon { font-size:4rem; margin-bottom:16px; }
+    .done-title { font-family:var(--font-display); font-size:1.5rem; font-weight:700; color:var(--text-hi); margin-bottom:8px; }
+    .done-sub { font-size:.9375rem; color:var(--text-lo); max-width:320px; line-height:1.65; }
 
-    /* ── Loading ── */
-    #phase-loading { text-align: center; }
-    .loading-msg { font-size: 1rem; color: var(--text-mid); margin-top: 20px; }
-
-    /* ── Done ── */
-    #phase-done { text-align: center; }
-    .done-icon { font-size: 4rem; margin-bottom: 16px; }
-    .done-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; color: var(--text-hi); margin-bottom: 8px; }
-    .done-sub { font-size: .9375rem; color: var(--text-lo); max-width: 320px; line-height: 1.65; }
-
-    @media (max-width: 640px) {
-      .reading-box { padding: 20px; font-size: 1rem; }
-      .code-card, .start-card { padding: 28px 20px; }
-    }
+    @media(max-width:640px) { .reading-box { padding:20px; font-size:1rem; } }
   </style>
 </head>
 <body>
-
 <nav class="nav">
   <a class="nav-brand" href="../index.html">
-    <div class="nav-logo">OA</div>
-    <span>ODAK-AI</span>
+    <div class="nav-logo">OA</div><span>ODAK-AI</span>
   </a>
   <div class="nav-right">
-    <span style="font-size:.8125rem; color:var(--text-lo);" id="nav-child-name"></span>
+    <span style="font-size:.8125rem;color:var(--text-lo);" id="nav-child-name"></span>
     <button class="theme-toggle" title="Temayı değiştir">☀️</button>
     <div class="lang-toggle">
       <button class="lang-btn active" data-lang="tr">TR</button>
@@ -275,7 +148,7 @@
   </div>
 </nav>
 
-<!-- ══ PHASE: CODE LOGIN ══ -->
+<!-- CODE LOGIN -->
 <div class="phase active" id="phase-code">
   <div class="code-card">
     <div class="code-icon">🔑</div>
@@ -289,18 +162,18 @@
   </div>
 </div>
 
-<!-- ══ PHASE: START ══ -->
+<!-- START -->
 <div class="phase" id="phase-start">
   <div class="start-card">
-    <div class="welcome-avatar">📚</div>
+    <div class="welcome-avatar" id="welcome-avatar">?</div>
     <h2 class="welcome-name" id="welcome-name">Merhaba!</h2>
-    <p style="font-size:.875rem; color:var(--text-lo);" id="welcome-sub">Okumaya hazır mısın?</p>
-    <div class="session-pill">
-      <span>⏱</span>
-      <span id="session-pill-text">20 dakika</span>
+    <p style="font-size:.875rem;color:var(--text-lo);" id="welcome-sub">Okumaya hazır mısın?</p>
+    <div class="session-pill"><span>⏱</span><span id="session-pill-text">20 dakika</span></div>
+    <div class="safari-warn" id="safari-warn">
+      ⚠️ Safari/iOS'ta ses tanıma çalışmaz. Chrome veya Edge kullanmanı öneririz.
     </div>
-    <p style="font-size:.8125rem; color:var(--text-xlo); margin-bottom:24px; line-height:1.6;" id="lbl-start-hint">
-      Oturum sırasında zaman zaman sesli okumanı isteyeceğiz. Hazır olduğunda başlayabilirsin.
+    <p style="font-size:.8125rem;color:var(--text-xlo);margin-bottom:24px;line-height:1.6;" id="lbl-start-hint">
+      Oturum sırasında sesli okuman istenecek. Hızın ölçülecek. Bitince sorular gelecek.
     </p>
     <button class="btn btn-primary btn-lg w-full" id="btn-start-session" onclick="startSession()">
       <span id="lbl-btn-start">Okumaya Başla</span>
@@ -308,7 +181,7 @@
   </div>
 </div>
 
-<!-- ══ PHASE: READING ══ -->
+<!-- READING -->
 <div class="phase" id="phase-reading">
   <div class="reading-layout">
     <div class="ral-banner" id="ral-banner">
@@ -316,38 +189,36 @@
       <span id="ral-text">🔔 Şimdi sesli oku!</span>
     </div>
     <div class="timer-bar">
-      <div class="timer-info">
+      <div style="display:flex;align-items:center;gap:16px;">
         <div class="timer-clock" id="timer-clock">20:00</div>
-        <div class="timer-progress">
-          <div class="timer-fill" id="timer-fill" style="width:100%;"></div>
-        </div>
+        <div class="timer-progress"><div class="timer-fill" id="timer-fill" style="width:100%;"></div></div>
       </div>
       <div class="badge badge-purple" id="seg-badge">0 seg</div>
     </div>
     <div class="reading-content">
-      <div class="reading-box" id="reading-box">
-        <!-- boş — çocuk kendi kitabını okur, biz sesini alıyoruz -->
-      </div>
-      <p class="reading-hint" id="lbl-reading-hint">
-        Kitabını oku — sesli okuma sinyalini bekliyoruz 🔔
-      </p>
+      <div class="reading-box" id="reading-box"></div>
+      <p class="reading-hint" id="lbl-reading-hint">Kitabını oku — sesli okuma sinyalini bekliyoruz 🔔</p>
     </div>
+  </div>
+  <div class="wpm-live" id="wpm-live">
+    <div class="wpm-val" id="wpm-val">0</div>
+    <div class="wpm-lbl" id="wpm-lbl-el">kelime/dk</div>
   </div>
 </div>
 
-<!-- ══ PHASE: LOADING ══ -->
+<!-- LOADING -->
 <div class="phase" id="phase-loading">
   <div class="spinner"></div>
-  <p class="loading-msg" id="lbl-loading-msg">Sorular hazırlanıyor…</p>
+  <p class="loading-msg" id="lbl-loading-msg">Yükleniyor…</p>
 </div>
 
-<!-- ══ PHASE: QUESTIONS ══ -->
+<!-- QUESTIONS -->
 <div class="phase" id="phase-questions">
   <div class="questions-layout">
     <div class="q-counter" id="q-counter">SORU 1 / 7</div>
     <div class="q-progress"><div class="q-fill" id="q-fill" style="width:0%"></div></div>
     <div id="question-wrap"></div>
-    <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+    <div style="display:flex;justify-content:flex-end;margin-top:8px;">
       <button class="btn btn-primary" id="btn-next-q" onclick="nextQuestion()">
         <span id="lbl-btn-next">Sonraki</span>
       </button>
@@ -355,7 +226,7 @@
   </div>
 </div>
 
-<!-- ══ PHASE: DONE ══ -->
+<!-- DONE -->
 <div class="phase" id="phase-done">
   <div class="done-icon">🎉</div>
   <h2 class="done-title" id="lbl-done-title">Harika iş!</h2>
@@ -368,7 +239,6 @@
 <script src="../firebase.js" type="module"></script>
 <script src="../app.js"></script>
 <script>
-// ── State — en üstte var ile ──
 var childInfo = null;
 var sessionDuration = 20;
 var totalSeconds = 0;
@@ -384,56 +254,48 @@ var recognition = null;
 
 var CT = {
   tr: {
-    codeTitle: 'Giriş Kodu', codeSub: 'Ebeveyninden aldığın 6 haneli kodu gir',
-    btnEnter: 'Giriş Yap', codeError: 'Geçersiz kod. Tekrar dene.',
-    codeChecking: 'Kontrol ediliyor…',
-    welcomeSub: 'Okumaya hazır mısın?',
-    startHint: 'Oturum sırasında zaman zaman sesli okumanı isteyeceğiz. Hazır olduğunda başlayabilirsin.',
-    btnStart: 'Okumaya Başla',
-    timeLeft: 'Kalan Süre',
-    segBadge: n => `${n} seg`,
-    readingHint: 'Kitabını oku — sesli okuma sinyalini bekliyoruz 🔔',
-    ralPrompt: '🔔 Şimdi sesli oku!',
-    ralListening: '🎙️ Dinleniyor…',
-    ralDone: '✅ Harika! Okumaya devam et.',
-    loadingQ: 'Sorular hazırlanıyor…',
-    loadingA: 'Analiz yapılıyor…',
-    qCounter: (n, t) => `SORU ${n} / ${t}`,
-    btnNext: 'Sonraki', btnSubmit: 'Gönder',
-    placeholder: 'Cevabını buraya yaz…',
-    doneTitle: 'Harika iş!',
-    doneSub: 'Rapor hazırlandı. Ebeveynin panelden sonuçları görebilir.',
-    doneBtn: 'Ana Sayfa',
-    errorNoAI: 'AI yapılandırması eksik.',
-    errorSpeech: 'Mikrofon erişimi sağlanamadı.',
-    sessionPill: m => `${m} dakika`,
-    merhaba: name => `Merhaba, ${name}!`,
+    codeTitle:'Giriş Kodu', codeSub:'Ebeveyninden aldığın 6 haneli kodu gir',
+    btnEnter:'Giriş Yap', codeError:'Geçersiz kod. Tekrar dene.', codeChecking:'Kontrol ediliyor…',
+    welcomeSub:'Okumaya hazır mısın?',
+    startHint:'Oturum sırasında sesli okuman istenecek. Hızın ölçülecek. Bitince sorular gelecek.',
+    btnStart:'Okumaya Başla',
+    readingHint:'Kitabını oku — sesli okuma sinyalini bekliyoruz 🔔',
+    ralPrompt:'🔔 Şimdi sesli oku!', ralListening:'🎙️ Dinleniyor…', ralDone:'✅ Devam et!',
+    loadingQ:'Analiz yapılıyor…',
+    qCounter:(n,total)=>`SORU ${n} / ${total}`,
+    btnNext:'Sonraki', btnSubmit:'Gönder',
+    placeholder:'Cevabını buraya yaz…',
+    doneTitle:'Harika iş!', doneSub:'Rapor hazırlandı. Ebeveynin panelden sonuçları görebilir.',
+    doneBtn:'Ana Sayfa',
+    errorNoAI:'AI yapılandırması eksik.',
+    sessionPill:(m)=>`${m} dakika`,
+    merhaba:(name)=>`Merhaba, ${name}!`,
+    segBadge:(n)=>`${n} seg`,
+    wpmLbl:'kelime/dk',
+    easy:'Kolay', medium:'Orta', hard:'Zor',
+    noSession:'Bu kod için hazırlanmış oturum bulunamadı. Ebeveynin oturumu hazırlamasını bekle.',
   },
   en: {
-    codeTitle: 'Entry Code', codeSub: 'Enter the 6-digit code from your parent',
-    btnEnter: 'Enter', codeError: 'Invalid code. Try again.',
-    codeChecking: 'Checking…',
-    welcomeSub: 'Ready to read?',
-    startHint: 'During the session we\'ll ask you to read aloud occasionally. Start when you\'re ready.',
-    btnStart: 'Start Reading',
-    timeLeft: 'Time Left',
-    segBadge: n => `${n} seg`,
-    readingHint: 'Read your book — waiting for the read-aloud signal 🔔',
-    ralPrompt: '🔔 Read aloud now!',
-    ralListening: '🎙️ Listening…',
-    ralDone: '✅ Great! Keep reading.',
-    loadingQ: 'Generating questions…',
-    loadingA: 'Analysing…',
-    qCounter: (n, t) => `QUESTION ${n} / ${t}`,
-    btnNext: 'Next', btnSubmit: 'Submit',
-    placeholder: 'Type your answer here…',
-    doneTitle: 'Great job!',
-    doneSub: 'Report ready. Your parent can view results in the panel.',
-    doneBtn: 'Home',
-    errorNoAI: 'AI not configured.',
-    errorSpeech: 'Microphone access denied.',
-    sessionPill: m => `${m} minutes`,
-    merhaba: name => `Hello, ${name}!`,
+    codeTitle:'Entry Code', codeSub:'Enter the 6-digit code from your parent',
+    btnEnter:'Enter', codeError:'Invalid code. Try again.', codeChecking:'Checking…',
+    welcomeSub:'Ready to read?',
+    startHint:'During the session you\'ll be asked to read aloud. Your speed will be measured. Questions come at the end.',
+    btnStart:'Start Reading',
+    readingHint:'Read your book — waiting for the read-aloud signal 🔔',
+    ralPrompt:'🔔 Read aloud now!', ralListening:'🎙️ Listening…', ralDone:'✅ Keep going!',
+    loadingQ:'Analysing…',
+    qCounter:(n,total)=>`QUESTION ${n} / ${total}`,
+    btnNext:'Next', btnSubmit:'Submit',
+    placeholder:'Type your answer here…',
+    doneTitle:'Great job!', doneSub:'Report ready. Your parent can view results in the panel.',
+    doneBtn:'Home',
+    errorNoAI:'AI not configured.',
+    sessionPill:(m)=>`${m} minutes`,
+    merhaba:(name)=>`Hello, ${name}!`,
+    segBadge:(n)=>`${n} seg`,
+    wpmLbl:'words/min',
+    easy:'Easy', medium:'Medium', hard:'Hard',
+    noSession:'No prepared session found for this code. Ask your parent to prepare a session first.',
   }
 };
 
@@ -443,7 +305,7 @@ function t(key, ...args) {
 }
 
 function applyTexts() {
-  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const set = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
   set('lbl-code-title', t('codeTitle'));
   set('lbl-code-sub', t('codeSub'));
   set('lbl-btn-enter', t('btnEnter'));
@@ -453,6 +315,7 @@ function applyTexts() {
   set('lbl-done-title', t('doneTitle'));
   set('lbl-done-sub', t('doneSub'));
   set('lbl-done-btn', t('doneBtn'));
+  set('wpm-lbl-el', t('wpmLbl'));
 }
 
 function showPhase(id) {
@@ -466,52 +329,68 @@ function initChild() {
   applyTexts();
   window.addEventListener('odak:lang:change', applyTexts);
 
-  // Code input oluştur
+  // Safari uyarısı
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  if (isSafari) document.getElementById('safari-warn').style.display = 'block';
+
+  // Kod input oluştur (Ctrl+V desteği dahil)
+  buildCodeInputs();
+
+  // Önceki oturumdan kod varsa otomatik dene
+  const savedCode = sessionStorage.getItem('odak_child_code');
+  if (savedCode) autoLogin(savedCode);
+}
+
+function buildCodeInputs() {
   const wrap = document.getElementById('code-inputs');
+  wrap.innerHTML = '';
+
   for (let i = 0; i < 6; i++) {
     const inp = document.createElement('input');
     inp.className = 'code-digit';
     inp.maxLength = 1;
     inp.dataset.idx = i;
+    inp.setAttribute('autocomplete', 'off');
+
     inp.addEventListener('input', e => {
-      e.target.value = e.target.value.toUpperCase();
+      e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
       if (e.target.value && i < 5) wrap.children[i+1].focus();
     });
+
     inp.addEventListener('keydown', e => {
       if (e.key === 'Backspace' && !e.target.value && i > 0) wrap.children[i-1].focus();
       if (e.key === 'Enter') submitCode();
     });
+
+    // Ctrl+V — tüm kodu yapıştır
+    inp.addEventListener('paste', e => {
+      e.preventDefault();
+      const pasted = (e.clipboardData || window.clipboardData).getData('text')
+        .toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6);
+      for (let j = 0; j < 6; j++) {
+        if (wrap.children[j]) wrap.children[j].value = pasted[j] || '';
+      }
+      const lastFilled = Math.min(pasted.length, 5);
+      wrap.children[lastFilled]?.focus();
+    });
+
     wrap.appendChild(inp);
   }
   wrap.children[0]?.focus();
-
-  // Önceki kod varsa hatırla (sessionStorage)
-  const savedCode = sessionStorage.getItem('odak_child_code');
-  if (savedCode) {
-    // Otomatik giriş dene
-    autoLoginWithCode(savedCode);
-  }
 }
 
-async function autoLoginWithCode(code) {
+async function autoLogin(code) {
   try {
     const fb = await OdakApp.waitForFirebase();
     const info = await fb.DB.getParentByChildCode(code);
-    if (info) {
-      childInfo = info;
-      sessionDuration = info.parentData?.settings?.sessionDuration || 20;
-      enterStartPhase();
-    }
-  } catch(e) { /* sessiz başarısız ol */ }
+    if (info) { childInfo = info; enterStartPhase(); }
+  } catch(e) { /* sessiz */ }
 }
 
 async function submitCode() {
   const wrap = document.getElementById('code-inputs');
   const code = Array.from(wrap.children).map(i => i.value).join('').toUpperCase();
-  if (code.length < 6) {
-    document.getElementById('code-error').textContent = t('codeError');
-    return;
-  }
+  if (code.length < 6) { document.getElementById('code-error').textContent = t('codeError'); return; }
 
   document.getElementById('code-error').textContent = '';
   document.getElementById('btn-enter-code').disabled = true;
@@ -522,7 +401,6 @@ async function submitCode() {
     const info = await fb.DB.getParentByChildCode(code);
     if (!info) throw new Error('not_found');
     childInfo = info;
-    sessionDuration = info.parentData?.settings?.sessionDuration || 20;
     sessionStorage.setItem('odak_child_code', code);
     enterStartPhase();
   } catch(e) {
@@ -534,18 +412,32 @@ async function submitCode() {
 
 function enterStartPhase() {
   const name = childInfo.childName || '';
+  const initial = name.charAt(0).toUpperCase() || '?';
+  document.getElementById('welcome-avatar').textContent = initial;
   document.getElementById('welcome-name').textContent = t('merhaba', name);
   document.getElementById('nav-child-name').textContent = name;
+
+  // Oturum süresini active session'dan al
+  const activeSession = childInfo.activeSession;
+  sessionDuration = activeSession?.sessionDuration || childInfo.parentData?.settings?.sessionDuration || 20;
+  questions = activeSession?.questions || [];
+
   document.getElementById('session-pill-text').textContent = t('sessionPill', sessionDuration);
   totalSeconds = sessionDuration * 60;
   updateClock(totalSeconds);
+
+  if (!questions.length) {
+    OdakApp.showToast(t('noSession'), 'error');
+  }
+
   showPhase('phase-start');
 }
 
 function startSession() {
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    OdakApp.showToast(t('errorSpeech'), 'error');
-    return;
+  const hasSpeech = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
+  if (!hasSpeech) {
+    OdakApp.showToast(t('errorNoAI'), 'error');
+    // Devam ettir ama hız ölçümü olmadan
   }
   showPhase('phase-reading');
   startTimer();
@@ -566,6 +458,7 @@ function startTimer() {
       clearTimeout(ralTimeoutId);
       if (recognition) { try { recognition.stop(); } catch(e) {} }
       document.getElementById('ral-banner').classList.remove('show');
+      document.getElementById('wpm-live').style.display = 'none';
       onSessionEnd();
     }
   }, 1000);
@@ -576,26 +469,24 @@ function updateClock(secs) {
   const m = Math.floor(secs / 60);
   const s = secs % 60;
   document.getElementById('timer-clock').textContent =
-    String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
 }
 
-// ── Read Aloud ──
+// ── Read Aloud + Speed ──
 function playBeep() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const pattern = [
-      { freq: 1400, start: 0.0,  dur: 0.22 },
-      { freq: 1400, start: 0.32, dur: 0.22 },
-      { freq: 1400, start: 0.64, dur: 0.22 },
-      { freq: 1750, start: 0.96, dur: 0.65 },
+      { freq:1400, start:0.0,  dur:0.22 },
+      { freq:1400, start:0.32, dur:0.22 },
+      { freq:1400, start:0.64, dur:0.22 },
+      { freq:1750, start:0.96, dur:0.65 },
     ];
     pattern.forEach(({ freq, start, dur }) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = 'square';
-      osc.frequency.value = freq;
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'square'; osc.frequency.value = freq;
       gain.gain.setValueAtTime(0, ctx.currentTime + start);
       gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + start + 0.01);
       gain.gain.setValueAtTime(0.5, ctx.currentTime + start + dur - 0.02);
@@ -603,23 +494,23 @@ function playBeep() {
       osc.start(ctx.currentTime + start);
       osc.stop(ctx.currentTime + start + dur + 0.05);
     });
-  } catch(e) { console.warn('Ses çalınamadı:', e); }
+  } catch(e) {}
 }
 
 function scheduleNextRal() {
   const total = sessionDuration * 60;
   const minGap = Math.max(20, Math.floor(total * 0.15));
   const maxGap = Math.max(40, Math.floor(total * 0.25));
-  const delay = (Math.random() * (maxGap - minGap) + minGap) * 1000;
-  console.log(`[ODAK-AI] Sonraki sinyal: ${Math.round(delay / 1000)}sn`);
+  const delay  = (Math.random() * (maxGap - minGap) + minGap) * 1000;
+  console.log(`[ODAK-AI] Sonraki sinyal: ${Math.round(delay/1000)}sn`);
   ralTimeoutId = setTimeout(triggerRal, delay);
 }
 
 function triggerRal() {
   if (isListening) return;
-  const banner = document.getElementById('ral-banner');
+  const banner  = document.getElementById('ral-banner');
   const ralText = document.getElementById('ral-text');
-  const dot = document.getElementById('ral-dot');
+  const dot     = document.getElementById('ral-dot');
 
   playBeep();
   ralText.textContent = t('ralPrompt');
@@ -631,9 +522,21 @@ function triggerRal() {
     banner.className = 'ral-banner show listening';
     dot.style.display = 'block';
 
+    const startTime = Date.now();
     startSpeechRecognition(transcript => {
-      segments.push({ text: transcript, timestamp: elapsedSeconds, attention: null });
+      const durationSec = (Date.now() - startTime) / 1000;
+      const wordCount   = transcript.trim().split(/\s+/).filter(Boolean).length;
+      const wpm = durationSec > 0 ? Math.round((wordCount / durationSec) * 60) : 0;
+
+      segments.push({ transcript, wpm, timestamp: elapsedSeconds, durationSec, wordCount });
       document.getElementById('seg-badge').textContent = t('segBadge', segments.length);
+
+      // WPM live göster
+      if (wpm > 0) {
+        document.getElementById('wpm-val').textContent = wpm;
+        document.getElementById('wpm-live').style.display = 'block';
+        setTimeout(() => { document.getElementById('wpm-live').style.display = 'none'; }, 4000);
+      }
 
       ralText.textContent = t('ralDone');
       banner.className = 'ral-banner show';
@@ -651,6 +554,8 @@ function triggerRal() {
 function startSpeechRecognition(onResult) {
   isListening = true;
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { isListening = false; onResult(''); return; }
+
   recognition = new SR();
   recognition.lang = OdakApp.Lang.get() === 'tr' ? 'tr-TR' : 'en-US';
   recognition.interimResults = false;
@@ -660,60 +565,48 @@ function startSpeechRecognition(onResult) {
   const timeout = setTimeout(() => recognition.stop(), 25000);
 
   recognition.onresult = e => { transcript = e.results[0][0].transcript; };
-  recognition.onend = () => { clearTimeout(timeout); isListening = false; onResult(transcript || '[sessiz]'); };
-  recognition.onerror = () => { clearTimeout(timeout); isListening = false; onResult('[hata]'); };
+  recognition.onend   = () => { clearTimeout(timeout); isListening = false; onResult(transcript || ''); };
+  recognition.onerror = () => { clearTimeout(timeout); isListening = false; onResult(''); };
   recognition.start();
 }
 
 // ── Session End ──
-async function onSessionEnd() {
+function onSessionEnd() {
   showPhase('phase-loading');
   document.getElementById('lbl-loading-msg').textContent = t('loadingQ');
 
-  if (segments.length === 0) segments.push({ text: '[Ses alınamadı]', timestamp: 0, attention: 50 });
-
-  const allText = segments.map((s, i) => `[Segment ${i+1}]: ${s.text}`).join('\n');
-  const lang = OdakApp.Lang.get() === 'tr' ? 'Türkçe' : 'English';
-  const settings = childInfo.parentData?.settings || {};
-
-  const qPrompt = `You are an educational assistant. A student finished a reading session.
-Transcribed read-aloud segments:
-${allText}
-
-Generate exactly 7 comprehension questions in ${lang}.
-Return ONLY a JSON array, no markdown:
-[{"question":"...","correctAnswer":"..."}]`;
-
-  try {
-    const raw = await OdakApp.callAI(qPrompt, settings);
-    questions = JSON.parse(raw.replace(/```json|```/g, '').trim());
-    if (!Array.isArray(questions) || !questions.length) throw new Error('parse');
-    userAnswers = questions.map(() => '');
-    currentQIdx = 0;
-    renderQuestion(0);
-    showPhase('phase-questions');
-  } catch(e) {
-    OdakApp.showToast(e.message === 'no_api_key' ? t('errorNoAI') : e.message, 'error');
-    await saveReport({ score: 0, segments, qa: [], aiAnalysis: '—' });
+  if (!questions.length) {
+    saveReport({ score:0, segments, qa:[], aiAnalysis:'—', avgWpm:0 });
     showPhase('phase-done');
+    return;
   }
+
+  userAnswers = questions.map(() => '');
+  currentQIdx = 0;
+  renderQuestion(0);
+  showPhase('phase-questions');
 }
 
 function renderQuestion(idx) {
   const total = questions.length;
-  document.getElementById('q-counter').textContent = t('qCounter', idx + 1, total);
+  document.getElementById('q-counter').textContent = t('qCounter', idx+1, total);
   document.getElementById('q-fill').style.width = (idx / total * 100) + '%';
-  document.getElementById('lbl-btn-next').textContent = idx === total - 1 ? t('btnSubmit') : t('btnNext');
+  document.getElementById('lbl-btn-next').textContent = idx === total-1 ? t('btnSubmit') : t('btnNext');
+
+  const q = questions[idx];
+  const diffLabel = q.difficulty ? `<span class="badge badge-${q.difficulty === 'easy' ? 'green' : q.difficulty === 'medium' ? 'yellow' : 'red'} difficulty-badge">${t(q.difficulty)}</span>` : '';
+
   document.getElementById('question-wrap').innerHTML = `
     <div class="question-box">
-      <div class="question-text">${questions[idx].question}</div>
+      ${diffLabel}
+      <div class="question-text">${q.question}</div>
       <textarea class="answer-textarea" id="answer-ta" placeholder="${t('placeholder')}">${userAnswers[idx]}</textarea>
     </div>`;
 }
 
 async function nextQuestion() {
   userAnswers[currentQIdx] = document.getElementById('answer-ta')?.value.trim() || '';
-  if (currentQIdx < questions.length - 1) {
+  if (currentQIdx < questions.length-1) {
     currentQIdx++;
     renderQuestion(currentQIdx);
   } else {
@@ -724,56 +617,77 @@ async function nextQuestion() {
 
 async function analyseAndSave() {
   showPhase('phase-loading');
-  document.getElementById('lbl-loading-msg').textContent = t('loadingA');
+  document.getElementById('lbl-loading-msg').textContent = t('loadingQ');
 
   const lang = OdakApp.Lang.get() === 'tr' ? 'Türkçe' : 'English';
   const settings = childInfo.parentData?.settings || {};
-  const allText = segments.map((s, i) => `[Segment ${i+1} @${s.timestamp}s]: ${s.text}`).join('\n');
+
+  // Ortalama WPM hesapla
+  const validSegs = segments.filter(s => s.wpm > 0);
+  const avgWpm = validSegs.length ? Math.round(validSegs.reduce((a,b) => a+b.wpm, 0) / validSegs.length) : 0;
+
   const qaText = questions.map((q, i) =>
-    `Q${i+1}: ${q.question}\nCorrect: ${q.correctAnswer}\nStudent: ${userAnswers[i] || '—'}`
+    `Q${i+1} [${q.difficulty||''}]: ${q.question}\nDoğru: ${q.correctAnswer}\nÖğrenci: ${userAnswers[i]||'—'}`
   ).join('\n\n');
 
-  const prompt = `Educational analyst. Evaluate reading session in ${lang}.
-SEGMENTS:
-${allText}
-Q&A:
+  const segText = segments.map((s,i) =>
+    `Segment ${i+1}: ${s.wordCount} kelime, ${s.wpm} k/dk`
+  ).join('\n');
+
+  const prompt = `Eğitim analisti. Çocuğun okuma oturumunu ${lang} dilinde değerlendir.
+
+OKUMA HIZI SEGMENTLERİ:
+${segText || 'Segment yok'}
+
+SORU VE CEVAPLAR:
 ${qaText}
-Return ONLY JSON (no markdown):
-{"score":75,"segments":[{"attention":80}],"qa":[{"result":"correct"}],"aiAnalysis":"..."}`;
+
+SADECE JSON döndür (markdown yok):
+{"score":75,"qa":[{"result":"correct"}],"aiAnalysis":"..."}
+
+score: 0-100 anlama skoru
+qa: her soru için result: "correct", "wrong" veya "skipped"
+aiAnalysis: 3-5 cümle Türkçe/İngilizce analiz`;
 
   try {
     const raw = await OdakApp.callAI(prompt, settings);
     const result = JSON.parse(raw.replace(/```json|```/g, '').trim());
-    segments.forEach((s, i) => { s.attention = result.segments?.[i]?.attention ?? 50; });
     const finalQA = questions.map((q, i) => ({
       question: q.question,
       correctAnswer: q.correctAnswer,
       userAnswer: userAnswers[i] || '',
       result: result.qa?.[i]?.result || 'skipped'
     }));
-    await saveReport({ score: result.score || 0, segments, qa: finalQA, aiAnalysis: result.aiAnalysis || '—' });
+    await saveReport({
+      score: result.score || 0,
+      segments: segments.map(s => ({ wpm: s.wpm, timestamp: s.timestamp, wordCount: s.wordCount })),
+      qa: finalQA,
+      aiAnalysis: result.aiAnalysis || '—',
+      avgWpm
+    });
   } catch(e) {
-    await saveReport({ score: 0, segments, qa: [], aiAnalysis: '—' });
+    await saveReport({ score:0, segments:[], qa:[], aiAnalysis:'—', avgWpm });
   }
   showPhase('phase-done');
 }
 
 async function saveReport(payload) {
   try {
-    const fb = await OdakApp.waitForFirebase();
-    await fb.DB.saveChildSession(
-      sessionStorage.getItem('odak_child_code'),
-      { date: new Date().toISOString(), durationMinutes: sessionDuration, ...payload }
-    );
+    const fb  = await OdakApp.waitForFirebase();
+    const code = sessionStorage.getItem('odak_child_code');
+    const activeSession = childInfo.activeSession || {};
+    await fb.DB.saveChildSession(code, {
+      date: new Date().toISOString(),
+      durationMinutes: sessionDuration,
+      pageFrom: activeSession.pageFrom,
+      pageTo: activeSession.pageTo,
+      ...payload
+    });
   } catch(e) { console.warn('Rapor kaydedilemedi:', e); }
 }
 
-// En sonda çağır
-if (typeof window.OdakApp !== 'undefined') {
-  initChild();
-} else {
-  window.addEventListener('odak:app:ready', initChild, { once: true });
-}
+if (typeof window.OdakApp !== 'undefined') { initChild(); }
+else { window.addEventListener('odak:app:ready', initChild, { once:true }); }
 </script>
 </body>
 </html>
