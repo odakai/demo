@@ -131,6 +131,27 @@
     .done-sub { font-size:.9375rem; color:var(--text-lo); max-width:320px; line-height:1.65; }
 
     @media(max-width:640px) { .reading-box { padding:20px; font-size:1rem; } }
+
+    /* Çıkış butonu — her zaman görünür */
+    .exit-btn {
+      position:fixed; bottom:24px; left:24px;
+      background:var(--danger-bg); border:1px solid var(--danger);
+      color:var(--danger); border-radius:var(--radius-md);
+      padding:8px 14px; font-size:.8125rem; font-weight:600;
+      font-family:var(--font-display); cursor:pointer;
+      z-index:100; transition:all var(--transition);
+      display:none;
+    }
+    .exit-btn:hover { background:var(--danger); color:white; }
+    .exit-btn.visible { display:block; }
+
+    /* Sesli okuma sırasında arka plan rengi */
+    body.ral-active { background: rgba(79,142,247,.08) !important; }
+    body.ral-listening { background: rgba(52,211,153,.08) !important; }
+    body.ral-active .reading-layout,
+    body.ral-listening .reading-layout { transition: background .3s ease; }
+    body.ral-active #phase-reading { background: rgba(79,142,247,.05); }
+    body.ral-listening #phase-reading { background: rgba(52,211,153,.05); }
   </style>
 </head>
 <body>
@@ -236,6 +257,11 @@
 
 <div id="toast-container"></div>
 
+<!-- Sabit çıkış butonu -->
+<button class="exit-btn" id="exit-btn" onclick="exitSession()">
+  🚪 <span id="lbl-exit-btn">Çıkış Yap</span>
+</button>
+
 <script src="../firebase.js" type="module"></script>
 <script src="../app.js"></script>
 <script>
@@ -274,6 +300,8 @@ var CT = {
     wpmLbl:'kelime/dk',
     easy:'Kolay', medium:'Orta', hard:'Zor',
     noSession:'Bu kod için hazırlanmış oturum bulunamadı. Ebeveynin oturumu hazırlamasını bekle.',
+    exitBtn:'Çıkış Yap',
+    exitConfirm:'Çıkmak istediğinden emin misin? Oturum verisi kaydedilmeyecek.',
   },
   en: {
     codeTitle:'Entry Code', codeSub:'Enter the 6-digit code from your parent',
@@ -296,6 +324,8 @@ var CT = {
     wpmLbl:'words/min',
     easy:'Easy', medium:'Medium', hard:'Hard',
     noSession:'No prepared session found for this code. Ask your parent to prepare a session first.',
+    exitBtn:'Exit',
+    exitConfirm:'Are you sure you want to exit? Session data will not be saved.',
   }
 };
 
@@ -316,11 +346,39 @@ function applyTexts() {
   set('lbl-done-sub', t('doneSub'));
   set('lbl-done-btn', t('doneBtn'));
   set('wpm-lbl-el', t('wpmLbl'));
+  set('lbl-exit-btn', t('exitBtn'));
 }
 
 function showPhase(id) {
   document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+
+  // Çıkış butonu — kod ekranı HARİÇ her yerde görünsün
+  const exitBtn = document.getElementById('exit-btn');
+  if (exitBtn) exitBtn.classList.toggle('visible', id !== 'phase-code');
+
+  // Arka plan temizle
+  document.body.classList.remove('ral-active', 'ral-listening');
+}
+
+function exitSession() {
+  if (!confirm(t('exitConfirm'))) return;
+  // Timers durdur
+  clearInterval(timerInterval);
+  clearTimeout(ralTimeoutId);
+  if (recognition) { try { recognition.stop(); } catch(e) {} }
+  // Kodu sil
+  sessionStorage.removeItem('odak_child_code');
+  childInfo = null;
+  segments = [];
+  questions = [];
+  userAnswers = [];
+  elapsedSeconds = 0;
+  // Arka plan sıfırla
+  document.body.classList.remove('ral-active', 'ral-listening');
+  // Kod girişine dön
+  buildCodeInputs();
+  showPhase('phase-code');
 }
 
 function initChild() {
@@ -417,7 +475,10 @@ function enterStartPhase() {
   document.getElementById('welcome-name').textContent = t('merhaba', name);
   document.getElementById('nav-child-name').textContent = name;
 
-  // Oturum süresini active session'dan al
+  // Yaşı childInfo'dan al
+  const childAge = childInfo.childAge || 10;
+  window._childAge = childAge;
+
   const activeSession = childInfo.activeSession;
   sessionDuration = activeSession?.sessionDuration || childInfo.parentData?.settings?.sessionDuration || 20;
   questions = activeSession?.questions || [];
@@ -516,11 +577,15 @@ function triggerRal() {
   ralText.textContent = t('ralPrompt');
   banner.className = 'ral-banner show';
   dot.style.display = 'none';
+  document.body.classList.add('ral-active');
+  document.body.classList.remove('ral-listening');
 
   setTimeout(() => {
     ralText.textContent = t('ralListening');
     banner.className = 'ral-banner show listening';
     dot.style.display = 'block';
+    document.body.classList.remove('ral-active');
+    document.body.classList.add('ral-listening');
 
     const startTime = Date.now();
     startSpeechRecognition(transcript => {
@@ -541,6 +606,7 @@ function triggerRal() {
       ralText.textContent = t('ralDone');
       banner.className = 'ral-banner show';
       dot.style.display = 'none';
+      document.body.classList.remove('ral-active', 'ral-listening');
 
       setTimeout(() => {
         banner.classList.remove('show');
@@ -621,6 +687,15 @@ async function analyseAndSave() {
 
   const lang = OdakApp.Lang.get() === 'tr' ? 'Türkçe' : 'English';
   const settings = childInfo.parentData?.settings || {};
+  const childAge = window._childAge || 10;
+
+  // Yaşa göre WPM normu
+  const expectedWpm = childAge <= 7 ? 70 : childAge <= 9 ? 100 : childAge <= 11 ? 130 : childAge <= 13 ? 160 : 180;
+  const ageContext = childAge <= 8
+    ? (lang === 'Türkçe' ? 'Sorular çok kısa, somut ve görsel olsun. Tek cümlelik cevap yeterli.' : 'Questions must be very short, concrete and visual. One-sentence answers.')
+    : childAge <= 11
+    ? (lang === 'Türkçe' ? 'Sorular neden-nasıl içersin. Orta zorlukta olsun.' : 'Questions should include why/how. Medium difficulty.')
+    : (lang === 'Türkçe' ? 'Sorular analiz, karşılaştırma ve yorum gerektirsin.' : 'Questions should require analysis, comparison and interpretation.');
 
   // Ortalama WPM hesapla
   const validSegs = segments.filter(s => s.wpm > 0);
@@ -636,18 +711,27 @@ async function analyseAndSave() {
 
   const prompt = `Eğitim analisti. Çocuğun okuma oturumunu ${lang} dilinde değerlendir.
 
+ÇOCUK BİLGİSİ:
+- Yaş: ${childAge}
+- Bu yaş için beklenen okuma hızı: ${expectedWpm} kelime/dakika
+
 OKUMA HIZI SEGMENTLERİ:
 ${segText || 'Segment yok'}
 
 SORU VE CEVAPLAR:
 ${qaText}
 
+ANALİZDE DİKKAT ET:
+- Hızı yaşa göre değerlendir (beklenen: ${expectedWpm} k/dk)
+- ${ageContext}
+- Hız düşüklüğünün dikkat mi yoksa metni anlamama mı olduğunu yorumla
+
 SADECE JSON döndür (markdown yok):
 {"score":75,"qa":[{"result":"correct"}],"aiAnalysis":"..."}
 
 score: 0-100 anlama skoru
 qa: her soru için result: "correct", "wrong" veya "skipped"
-aiAnalysis: 3-5 cümle Türkçe/İngilizce analiz`;
+aiAnalysis: 3-5 cümle yaşa uygun Türkçe/İngilizce analiz`;
 
   try {
     const raw = await OdakApp.callAI(prompt, settings);
