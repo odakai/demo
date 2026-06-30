@@ -196,13 +196,53 @@
           <span id="lbl-step1">PDF Kitap</span>
         </div>
 
-        <div id="pdf-drop-area" class="pdf-drop">
-          <div class="pdf-drop-icon">📄</div>
-          <div class="pdf-drop-title" id="lbl-pdf-drop-title">PDF dosyasını buraya sürükle veya tıkla</div>
-          <div class="pdf-drop-sub" id="lbl-pdf-drop-sub">Sadece metin bazlı PDF · Maks 50MB</div>
-          <input type="file" id="pdf-file-input" accept=".pdf" style="display:none;">
+        <!-- PDF kaynak seçimi tabları -->
+        <div style="display:flex;gap:4px;margin-bottom:16px;background:var(--bg2);border-radius:var(--radius-md);padding:3px;">
+          <button class="btn btn-sm active" id="tab-upload" onclick="switchPDFTab('upload')"
+            style="flex:1;background:var(--surface);color:var(--text-hi);border:none;">
+            📁 <span id="lbl-tab-upload">Dosya Yükle</span>
+          </button>
+          <button class="btn btn-sm" id="tab-link" onclick="switchPDFTab('link')"
+            style="flex:1;background:none;color:var(--text-lo);border:none;">
+            🔗 <span id="lbl-tab-link">Link ile Aç</span>
+          </button>
         </div>
 
+        <!-- UPLOAD TAB -->
+        <div id="pdf-upload-panel">
+          <div id="pdf-drop-area" class="pdf-drop">
+            <div class="pdf-drop-icon">📄</div>
+            <div class="pdf-drop-title" id="lbl-pdf-drop-title">PDF dosyasını buraya sürükle veya tıkla</div>
+            <div class="pdf-drop-sub" id="lbl-pdf-drop-sub">Sadece metin bazlı PDF · Maks 50MB</div>
+            <input type="file" id="pdf-file-input" accept=".pdf" style="display:none;">
+          </div>
+        </div>
+
+        <!-- LINK TAB -->
+        <div id="pdf-link-panel" style="display:none;">
+          <div class="form-group" style="margin-bottom:10px;">
+            <label class="form-label" id="lbl-pdf-url">PDF Linki (URL)</label>
+            <div style="display:flex;gap:8px;">
+              <input class="form-input" type="url" id="inp-pdf-url"
+                placeholder="https://... veya Google Drive/GitHub raw link">
+              <button class="btn btn-primary btn-sm" onclick="loadPDFFromURL()" id="btn-load-url">
+                <span id="lbl-load-url">Yükle</span>
+              </button>
+            </div>
+          </div>
+          <div style="font-size:.75rem;color:var(--text-xlo);line-height:1.6;" id="lbl-url-hint">
+            💡 Google Drive: "Herkesle paylaş" → linki yapıştır<br>
+            💡 GitHub: Raw dosya linkini kullan<br>
+            ⚠️ Bazı siteler CORS engeli nedeniyle yüklenemeyebilir
+          </div>
+          <div id="url-loading" style="display:none;margin-top:12px;display:none;align-items:center;gap:10px;">
+            <div class="spinner" style="width:24px;height:24px;border-width:2px;"></div>
+            <span style="font-size:.8125rem;color:var(--text-lo);" id="lbl-url-loading">PDF yükleniyor…</span>
+          </div>
+          <div id="url-error" style="display:none;margin-top:10px;padding:10px 14px;background:var(--danger-bg);border:1px solid rgba(248,113,113,.3);border-radius:var(--radius-md);font-size:.8125rem;color:var(--danger);"></div>
+        </div>
+
+        <!-- PDF bilgi kutusu (her iki tab için ortak) -->
         <div id="pdf-info-box" style="display:none; margin-top:14px;">
           <div class="pdf-info">
             <div class="pdf-info-icon">📄</div>
@@ -290,6 +330,27 @@
           <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
             <div style="font-family:monospace; font-size:1.5rem; font-weight:700; color:var(--accent); background:var(--bg2); border:1px solid var(--border2); padding:8px 20px; border-radius:var(--radius-md);" id="ready-code">—</div>
             <span style="font-size:.8125rem; color:var(--text-lo);" id="lbl-ready-code-hint">Bu kodu çocuğuna ver</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Canlı Süre Takibi -->
+      <div id="live-timer-box" style="display:none; margin-top:16px;">
+        <div class="card" style="border-color:rgba(79,142,247,.3);">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+            <div class="pulse-dot"></div>
+            <span style="font-family:var(--font-display); font-size:.9375rem; font-weight:600; color:var(--text-hi);" id="lbl-live-title">Canlı Oturum</span>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+            <div>
+              <div style="font-family:var(--font-display); font-size:2rem; font-weight:700; color:var(--accent);" id="live-timer-clock">—:—</div>
+              <div style="font-size:.78rem; color:var(--text-lo); margin-top:4px;" id="live-timer-status">—</div>
+            </div>
+            <div class="timer-progress-wrap" style="flex:1; min-width:140px;">
+              <div style="height:6px; background:var(--border); border-radius:99px; overflow:hidden;">
+                <div id="live-timer-fill" style="height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:99px; width:100%; transition:width 1s linear;"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -462,7 +523,13 @@ var T = {
     sessionTitle:'Oturum Başlat', sessionSub:'PDF yükle, sayfa aralığı seç, çocuğu seç ve oturumu hazırla.',
     step1:'PDF Kitap', step2:'Sayfa Aralığı', step3:'Çocuk Seç', step4:'Oturum Süresi',
     pdfDropTitle:'PDF dosyasını buraya sürükle veya tıkla', pdfDropSub:'Sadece metin bazlı PDF · Maks 50MB',
-    pdfClear:'Kaldır', pageFrom:'Başlangıç Sayfası', pageTo:'Bitiş Sayfası',
+    pdfClear:'Kaldır',
+    tabUpload:'Dosya Yükle', tabLink:'Link ile Aç',
+    pdfUrl:'PDF Linki (URL)', loadUrl:'Yükle',
+    urlHint:'💡 Google Drive: "Herkesle paylaş" → linki yapıştır<br>💡 GitHub: Raw dosya linkini kullan<br>⚠️ Bazı siteler CORS engeli nedeniyle yüklenemeyebilir',
+    urlLoading:'PDF yükleniyor…',
+    urlErrorCors:'CORS engeli: Bu site PDF paylaşımına izin vermiyor. Google Drive veya GitHub raw link deneyin.',
+    urlErrorFetch:'PDF yüklenemedi. Linki kontrol edin.', pageFrom:'Başlangıç Sayfası', pageTo:'Bitiş Sayfası',
     extract:'Metni Çıkar', pageLimit:'Maksimum 15 sayfa seçebilirsiniz.',
     preview:'Metin önizleme (ilk 300 karakter):',
     duration:'Süre (dakika)',
@@ -470,7 +537,7 @@ var T = {
     btnPrepare:'🤖 Hazırla', preparing:'Hazırlanıyor…',
     readyTitle:'✅ Oturum Hazır!',
     readySub:'Sorular üretildi. Çocuğun giriş kodunu paylaş ve okumaya başlamasını söyle.',
-    readyCodeHint:'Bu kodu çocuğuna ver',
+    readyCodeHint:'Bu kodu çocuğuna ver', liveTitle:'Canlı Oturum',
     childrenTitle:'Çocuklarım', childrenSub:'Her çocuk için ayrı giriş kodu.',
     addChild:'Çocuk Ekle',
     reportsTitle:'Raporlar', reportsSub:'Tüm oturum sonuçları.',
@@ -502,7 +569,13 @@ var T = {
     sessionTitle:'Start Session', sessionSub:'Upload PDF, select page range, choose child and prepare session.',
     step1:'PDF Book', step2:'Page Range', step3:'Select Child', step4:'Session Duration',
     pdfDropTitle:'Drag PDF here or click', pdfDropSub:'Text-based PDF only · Max 50MB',
-    pdfClear:'Remove', pageFrom:'Start Page', pageTo:'End Page',
+    pdfClear:'Remove',
+    tabUpload:'Upload File', tabLink:'Open by Link',
+    pdfUrl:'PDF Link (URL)', loadUrl:'Load',
+    urlHint:'💡 Google Drive: Share publicly → paste link<br>💡 GitHub: Use the Raw file link<br>⚠️ Some sites block cross-origin requests',
+    urlLoading:'Loading PDF…',
+    urlErrorCors:'CORS error: This site does not allow PDF sharing. Try Google Drive or GitHub raw link.',
+    urlErrorFetch:'Could not load PDF. Check the link.', pageFrom:'Start Page', pageTo:'End Page',
     extract:'Extract Text', pageLimit:'Maximum 15 pages allowed.',
     preview:'Text preview (first 300 chars):',
     duration:'Duration (minutes)',
@@ -510,7 +583,7 @@ var T = {
     btnPrepare:'🤖 Prepare', preparing:'Preparing…',
     readyTitle:'✅ Session Ready!',
     readySub:'Questions generated. Share the child\'s login code and ask them to start reading.',
-    readyCodeHint:'Give this code to your child',
+    readyCodeHint:'Give this code to your child', liveTitle:'Live Session',
     childrenTitle:'My Children', childrenSub:'Separate login code for each child.',
     addChild:'Add Child',
     reportsTitle:'Reports', reportsSub:'All session results.',
@@ -559,6 +632,13 @@ function applyTexts() {
   set('lbl-pdf-drop-title', t('pdfDropTitle'));
   set('lbl-pdf-drop-sub', t('pdfDropSub'));
   set('lbl-pdf-clear', t('pdfClear'));
+  set('lbl-tab-upload', t('tabUpload'));
+  set('lbl-tab-link', t('tabLink'));
+  set('lbl-pdf-url', t('pdfUrl'));
+  set('lbl-load-url', t('loadUrl'));
+  set('lbl-url-loading', t('urlLoading'));
+  const hint = document.getElementById('lbl-url-hint');
+  if (hint) hint.innerHTML = t('urlHint');
   set('lbl-page-from', t('pageFrom'));
   set('lbl-page-to', t('pageTo'));
   set('lbl-extract', t('extract'));
@@ -571,6 +651,7 @@ function applyTexts() {
   set('lbl-ready-title', t('readyTitle'));
   set('lbl-ready-sub', t('readySub'));
   set('lbl-ready-code-hint', t('readyCodeHint'));
+  set('lbl-live-title', t('liveTitle'));
   set('lbl-children-title', t('childrenTitle'));
   set('lbl-children-sub', t('childrenSub'));
   set('lbl-reports-title', t('reportsTitle'));
@@ -644,6 +725,98 @@ async function initParent() {
   document.getElementById('inp-page-to').addEventListener('input', validatePageRange);
 }
 
+// ── PDF Tab Switch ──
+function switchPDFTab(tab) {
+  const isUpload = tab === 'upload';
+  document.getElementById('pdf-upload-panel').style.display = isUpload ? 'block' : 'none';
+  document.getElementById('pdf-link-panel').style.display   = isUpload ? 'none'  : 'block';
+
+  const tabUpload = document.getElementById('tab-upload');
+  const tabLink   = document.getElementById('tab-link');
+  if (isUpload) {
+    tabUpload.style.background = 'var(--surface)'; tabUpload.style.color = 'var(--text-hi)';
+    tabLink.style.background   = 'none';           tabLink.style.color   = 'var(--text-lo)';
+  } else {
+    tabLink.style.background   = 'var(--surface)'; tabLink.style.color = 'var(--text-hi)';
+    tabUpload.style.background = 'none';            tabUpload.style.color = 'var(--text-lo)';
+  }
+}
+
+// ── PDF from URL ──
+async function loadPDFFromURL() {
+  const url = document.getElementById('inp-pdf-url').value.trim();
+  if (!url) return;
+
+  const errEl     = document.getElementById('url-error');
+  const loadingEl = document.getElementById('url-loading');
+  errEl.style.display     = 'none';
+  loadingEl.style.display = 'flex';
+  document.getElementById('btn-load-url').disabled = true;
+
+  try {
+    // Google Drive linkini direkt indirme linkine çevir
+    const fetchUrl = convertGDriveURL(url);
+
+    let arrayBuffer;
+    try {
+      const res = await fetch(fetchUrl);
+      if (!res.ok) throw new Error('fetch_fail');
+      arrayBuffer = await res.arrayBuffer();
+    } catch(fetchErr) {
+      // CORS hatası — proxy ile dene
+      try {
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(fetchUrl)}`;
+        const res2 = await fetch(proxyUrl);
+        if (!res2.ok) throw new Error('proxy_fail');
+        arrayBuffer = await res2.arrayBuffer();
+      } catch(proxyErr) {
+        throw new Error('cors');
+      }
+    }
+
+    // pdf.js ile yükle
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    window._currentPDF = pdf;
+    totalPdfPages = pdf.numPages;
+
+    // Dosya adını URL'den çıkar
+    const fileName = decodeURIComponent(url.split('/').pop().split('?')[0]) || 'document.pdf';
+    const sizeMB   = (arrayBuffer.byteLength / 1024 / 1024).toFixed(1);
+
+    document.getElementById('pdf-name').textContent = fileName;
+    document.getElementById('pdf-meta').textContent = `${sizeMB} MB · ${totalPdfPages} sayfa · URL`;
+    document.getElementById('inp-page-to').value = Math.min(10, totalPdfPages);
+    document.getElementById('inp-page-to').max   = totalPdfPages;
+    document.getElementById('pdf-info-box').style.display = 'block';
+    document.getElementById('pdf-warn').style.display     = 'none';
+    document.getElementById('btn-extract').disabled = false;
+
+    OdakApp.showToast('PDF yüklendi ✅', 'success');
+  } catch(e) {
+    const msg = e.message === 'cors'
+      ? t('urlErrorCors')
+      : t('urlErrorFetch');
+    errEl.textContent   = msg;
+    errEl.style.display = 'block';
+  }
+
+  loadingEl.style.display = 'none';
+  document.getElementById('btn-load-url').disabled = false;
+}
+
+function convertGDriveURL(url) {
+  // Google Drive paylaşım linki → direkt indirme
+  // https://drive.google.com/file/d/FILE_ID/view → https://drive.google.com/uc?export=download&id=FILE_ID
+  const gdMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+  if (gdMatch) return `https://drive.google.com/uc?export=download&id=${gdMatch[1]}`;
+
+  // Google Drive open link
+  const gdOpen = url.match(/drive\.google\.com\/open\?id=([^&]+)/);
+  if (gdOpen) return `https://drive.google.com/uc?export=download&id=${gdOpen[1]}`;
+
+  return url;
+}
+
 // ── PDF Drop ──
 function setupPDFDrop() {
   const drop = document.getElementById('pdf-drop-area');
@@ -684,6 +857,10 @@ function clearPDF() {
   document.getElementById('pdf-drop-area').style.display = 'block';
   document.getElementById('pdf-info-box').style.display = 'none';
   document.getElementById('pdf-file-input').value = '';
+  const urlInp = document.getElementById('inp-pdf-url');
+  if (urlInp) urlInp.value = '';
+  const urlErr = document.getElementById('url-error');
+  if (urlErr) urlErr.style.display = 'none';
   document.getElementById('btn-extract').disabled = true;
   document.getElementById('text-preview').style.display = 'none';
   document.getElementById('extract-status').textContent = '';
@@ -826,6 +1003,9 @@ ${extractedText.substring(0, 6000)}`;
     document.getElementById('ready-code').textContent = child?.code || '—';
     document.getElementById('session-ready-box').style.display = 'block';
     OdakApp.showToast(OdakApp.Lang.get() === 'tr' ? 'Oturum hazır!' : 'Session ready!', 'success');
+
+    // Canlı süre takibini başlat
+    startLiveTimerPolling(child?.code);
   } catch(e) {
     OdakApp.showToast(e.message === 'no_api_key' ? t('aiProvider') + ' API key eksik' : e.message, 'error');
   }
@@ -833,6 +1013,49 @@ ${extractedText.substring(0, 6000)}`;
   btn.disabled = false;
   document.getElementById('lbl-btn-prepare').textContent = t('btnPrepare');
   updatePrepareBtn();
+}
+
+// ── Canlı Süre Takibi (Polling) ──
+var liveTimerPollInterval = null;
+
+function startLiveTimerPolling(code) {
+  if (!code) return;
+  clearInterval(liveTimerPollInterval);
+
+  liveTimerPollInterval = setInterval(async () => {
+    try {
+      const fb = await OdakApp.waitForFirebase();
+      const live = await fb.DB.getLiveSession(code);
+      const box = document.getElementById('live-timer-box');
+
+      if (!live) {
+        // Oturum henüz başlamadı veya bitti
+        box.style.display = 'none';
+        return;
+      }
+
+      box.style.display = 'block';
+      const mins = Math.floor(live.remainingSeconds / 60);
+      const secs = live.remainingSeconds % 60;
+      document.getElementById('live-timer-clock').textContent =
+        String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0');
+
+      const pct = (live.remainingSeconds / live.totalSeconds) * 100;
+      document.getElementById('live-timer-fill').style.width = pct + '%';
+
+      const statusText = live.status === 'listening'
+        ? (OdakApp.Lang.get() === 'tr' ? '🎙️ Sesli okuyor…' : '🎙️ Reading aloud…')
+        : (OdakApp.Lang.get() === 'tr' ? '📖 Okuyor…' : '📖 Reading…');
+      document.getElementById('live-timer-status').textContent = statusText;
+
+      if (live.remainingSeconds <= 0) {
+        box.style.display = 'none';
+        clearInterval(liveTimerPollInterval);
+      }
+    } catch(e) {
+      // Sessiz geç — RTDB henüz yok veya hata
+    }
+  }, 3000);
 }
 
 // ── Section nav ──
