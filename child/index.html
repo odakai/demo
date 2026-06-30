@@ -367,6 +367,11 @@ function exitSession() {
   clearInterval(timerInterval);
   clearTimeout(ralTimeoutId);
   if (recognition) { try { recognition.stop(); } catch(e) {} }
+  // Canlı süre kaydını sil
+  const code = sessionStorage.getItem('odak_child_code');
+  if (code) {
+    OdakApp.waitForFirebase().then(fb => { fb.DB.endLiveTimer(code).catch(()=>{}); });
+  }
   // Kodu sil
   sessionStorage.removeItem('odak_child_code');
   childInfo = null;
@@ -503,23 +508,47 @@ function startSession() {
   showPhase('phase-reading');
   startTimer();
   scheduleNextRal();
+
+  // Canlı süre takibini başlat (ebeveyn panelinde görünsün)
+  const code = sessionStorage.getItem('odak_child_code');
+  OdakApp.waitForFirebase().then(fb => {
+    fb.DB.startLiveTimer(code, totalSeconds).catch(()=>{});
+  });
 }
 
 // ── Timer ──
 function startTimer() {
   elapsedSeconds = 0;
   updateClock(totalSeconds);
+  let lastRtdbUpdate = 0;
+
   timerInterval = setInterval(() => {
     elapsedSeconds++;
     const remaining = totalSeconds - elapsedSeconds;
     updateClock(remaining);
     document.getElementById('timer-fill').style.width = (remaining / totalSeconds * 100) + '%';
+
+    // RTDB'ye her 3 saniyede bir güncelle (gereksiz trafik yaratmamak için)
+    if (elapsedSeconds - lastRtdbUpdate >= 3) {
+      lastRtdbUpdate = elapsedSeconds;
+      const code = sessionStorage.getItem('odak_child_code');
+      const status = isListening ? 'listening' : 'reading';
+      OdakApp.waitForFirebase().then(fb => {
+        fb.DB.updateLiveTimer(code, remaining, status).catch(()=>{});
+      });
+    }
+
     if (remaining <= 0) {
       clearInterval(timerInterval);
       clearTimeout(ralTimeoutId);
       if (recognition) { try { recognition.stop(); } catch(e) {} }
       document.getElementById('ral-banner').classList.remove('show');
       document.getElementById('wpm-live').style.display = 'none';
+
+      // Canlı süre kaydını sil
+      const code = sessionStorage.getItem('odak_child_code');
+      OdakApp.waitForFirebase().then(fb => { fb.DB.endLiveTimer(code).catch(()=>{}); });
+
       onSessionEnd();
     }
   }, 1000);
